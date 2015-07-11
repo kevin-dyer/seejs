@@ -86,23 +86,29 @@ var formattedList;
                 signature,
                 pos,
                 i,
-                d3Root;
 
 
             tree = esprima.parse(code, { range: true, loc: true});
 
             functionList = getFunctionList(tree, code);
+            functionList = setParentFunctions(functionList);
+            functionList = setScopedFunctionList(functionList);
             functionList = setDependencies(functionList);
 
             formattedList = {
-                    name: '',
-                    dependencies: functionList.map(function(ele) {
-                        return {
-                            name: ele.name === '[Anonymous]' ? '' : ele.name,
-                            dependencies: ele.dependencies
-                        }
-                    })
-                };
+                name: '',
+                dependencies: getScopedFunctionList(null, functionList).map(function(ele) {
+                    return {
+                        name: ele.name === '[Anonymous]' ? '' : ele.name,
+                        dependencies: ele.dependencies
+                    };
+                })
+            };
+
+            //remove root node if there is only one dependency.
+            if (formattedList.dependencies.length === 1) {
+                formattedList = formattedList.dependencies[0];
+            }
 
             
             makeTree(formattedList);
@@ -189,7 +195,7 @@ var formattedList;
             }
         });
 
-        return setParentFunctions(functionList);
+        return functionList;
     }
 
     function setParentFunctions (functionList) {
@@ -234,24 +240,48 @@ var formattedList;
 
 
     //this should call itself with its parent node until it is null
-    function getScopedFunctionList (node, functionList) {
+    function getScopedFunctionList (node, functionList, originalNode) {
         var children = [],
             i,
             listLength = functionList.length,
             func;
 
+        originalNode = originalNode ? originalNode : node;
+
+        // if (node.name === '[Anonymous]') {
+        //     return [node.myParent];
+        // }
         for(i = 0; i < listLength; i++ ){
             func = functionList[i];
+
+            //anonymouse functions can only be called by their parent
+            if (func.name === '[Anonymous]' && func.myParent !== originalNode) {
+                continue;
+            }
+
             if (func.myParent === node) {
                 children.push(func);
             }
         }
         if (node) {
             //recurs
-            children = children.concat(getScopedFunctionList(node.myParent, functionList));
+            children = children.concat(getScopedFunctionList(node.myParent, functionList, originalNode));
         }
 
         return children;
+    }
+
+    function setScopedFunctionList (functionList) {
+        var i,
+            listLength = functionList.length,
+            node;
+
+        for (i = 0; i < listLength; i++) {
+            node = functionList[i];
+            node.scopedFunctions = getScopedFunctionList(node, functionList);
+        }
+
+        return functionList;
     }
 
     function modify(code, modifiers) {
@@ -278,7 +308,7 @@ var formattedList;
         for(i = 0; i < listLength; i++) {
             var func = functionList[i],
                 node = func.treeNode,
-                scopedList = getScopedFunctionList(func, functionList);
+                scopedList = func.scopedFunctions;
 
             // console.log("functionList: ", functionList, ", length = ", functionList.length);
             //console.log("scopedList: ", scopedList.map(function(x){return x.name}), ", node = ", func.name);
