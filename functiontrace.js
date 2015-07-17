@@ -42,16 +42,11 @@
             code = window.editor.getText();
         }
 
-        tracer = window.esmorph.Tracer.FunctionEntrance(function (fn) {
-            signature = 'window.TRACE.enterFunction({ ';
-            signature += 'name: "' + fn.name + '", ';
-            signature += 'lineNumber: ' + fn.loc.start.line + ', ';
-            signature += 'range: [' + fn.range[0] + ',' + fn.range[1] + ']';
-            signature += ' });';
-            return signature;
-        });
+        // tracer = window.esmorph.Tracer.FunctionEntrance();
 
-        code = window.esmorph.modify(code, tracer);
+        // code = window.esmorph.modify(code, tracer);
+
+        code = window.esmorph.Tracer.init(code);
 
         // Enclose in IIFE.
         code = '(function() {\n' + code + '\n}())';
@@ -110,7 +105,7 @@
 
             //createTraceCollector();
             code = traceInstrument();
-            eval(code)
+            //eval(code)
     };
 }(window));
 

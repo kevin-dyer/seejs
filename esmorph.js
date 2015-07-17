@@ -1,6 +1,3 @@
-
-var formattedList;
-
 (function (exports) {
     'use strict';
 
@@ -57,147 +54,294 @@ var formattedList;
         if (visitor.call(null, object, parent) === false) {
             return;
         }
+
         for (key in object) {
             if (object.hasOwnProperty(key)) {
                 child = object[key];
                 path = [ object ];
-
-                //console.log("Object: ", object, ", parent: ", parent);
-
                 path.push(parent);
                 if (typeof child === 'object' && child !== null) {
-                    //console.log("parent: ", object);
-                    //child.myParent = object.id;
                     traverse(child, visitor, path);
                 }
             }
         }
+    }
 
+    function traverseFunctionTree(object, visitor, master) {
+        var key, child, parent, path, i, children, childrenLength;
 
+        parent = (typeof master === 'undefined') ? [] : master;
+
+        if (visitor.call(null, object, parent) === false) {
+            return;
+        }
+
+        children = object.children;
+        childrenLength = children.length;
+        for(i = 0; i < childrenLength; i++) {
+            child = children[i];
+            path = [object];
+            path.push(parent);
+            if (typeof child === 'object' && child !== null) {
+                traverseFunctionTree(child, visitor, path);
+            }
+        }
     }
 
 
-    function traceFunctionEntrance(traceName) {
-
-        return function (code) {
-            var tree,
-                functionList,
-                param,
-                signature,
-                pos,
-                i,
 
 
-            tree = esprima.parse(code, { range: true, loc: true});
 
-            functionList = getFunctionList(tree, code);
-            functionList = setParentFunctions(functionList);
-            functionList = setScopedFunctionList(functionList);
-            functionList = setDependencies(functionList);
 
-            formattedList = {
-                name: '',
-                dependencies: getScopedFunctionList(null, functionList).map(function(ele) {
-                    return {
-                        name: ele.name === '[Anonymous]' ? '' : ele.name,
-                        dependencies: ele.dependencies
-                    };
-                })
-            };
 
-            //remove root node if there is only one dependency.
-            if (formattedList.dependencies.length === 1) {
-                formattedList = formattedList.dependencies[0];
+    //function tree should be passed in as: {name: 'root', children: []}
+    function createFunctionTree (object, code, functionTree, master, masterFunction) {
+        var key, 
+            child, 
+            parent,
+            parentFunction,
+            path, 
+            i, 
+            functionObject;
+
+        //parent = (typeof master === 'undefined') ? [] : master;
+        parent = (typeof master === 'undefined') ? [] : master;
+        parentFunction = (masterFunction && !isEmpty(masterFunction)) ? masterFunction : functionTree;
+
+
+
+        // if (visitor.call(null, object, parent) === false) {
+        //     return;
+        // }
+
+        //this could be in visitor function
+        functionObject = createFunctionObject(object, parent[0], code);
+        
+
+        for (key in object) {
+            if (object.hasOwnProperty(key)) {
+                child = object[key];
+                path = [ object ];
+                path.push(parent);
+
+                if (typeof child === 'object' && child !== null) {
+                    if (!isEmpty(functionObject)) {
+                        if (getNodeScope(parentFunction).concat(parentFunction.children).indexOf(functionObject) < 0) {
+                            functionObject.parent = parentFunction;
+                            parentFunction.children.push(functionObject);
+                        }
+                        createFunctionTree(child, code, functionTree, path, functionObject);
+                    } else {
+                        createFunctionTree(child, code, functionTree, path, parentFunction);
+                    }
+                }
             }
+        }
+    }
 
-            
-            makeTree(formattedList);
+    function isEmpty(obj) {
+        for(var prop in obj) {
+            if(obj.hasOwnProperty(prop))
+                return false;
+        }
 
-            console.log("esprima tree: ", tree);
-            console.log("functionList: ", functionList);
-            console.log("formatted list: ", formattedList);
+        return true;
+    }
 
-            return code;
+    function init (code) {
+        var tree,
+            functionList,
+            functionTree,
+            param,
+            signature,
+            pos,
+            i,
+            formattedList;
+
+
+        tree = esprima.parse(code, { range: true, loc: true});
+        console.log("esprima tree: ", tree);
+
+        //init function tree
+        functionTree = getFunctionTree(tree, code);
+        functionTree = setFunctionTreeDependencies(functionTree);
+        console.log("functionTree!!!, ", functionTree);
+
+        functionList = getFunctionList(tree, code);
+        functionList = setParentFunctions(functionList);
+        functionList = setScopedFunctionList(functionList);
+        functionList = setDependencies(functionList);
+
+
+
+        formattedList = {
+            name: '',
+            dependencies: getScopedFunctionList(null, functionList).map(function(ele) {
+                return {
+                    name: ele.name === '[Anonymous]' ? '' : ele.name,
+                    dependencies: ele.dependencies
+                };
+            })
         };
+
+        //remove root node if there is only one dependency.
+        if (formattedList.dependencies.length === 1) {
+            formattedList = formattedList.dependencies[0];
+        }
+        
+        makeTree(formattedList);
+
+        
+        console.log("functionList: ", functionList);
+        console.log("formatted list: ", formattedList);
+
+        return code;
     }
 
     function getFunctionList (node, code) {
         var functionList = [];
 
-
         traverse(node, function (node, path) {
-            var parent;
+            var parent = (path && path[0]) ? path[0] : {},
+                functionObject = createFunctionObject(node, path[0], code);
 
-            if (node.type === Syntax.FunctionDeclaration) {
-                functionList.push({
-                    name: node.id.name,
-                    range: node.range,
-                    loc: node.loc,
-                    blockStart: node.body.range[0],
-                    treeNode: node,
-                    dependencies: []
-                });
-            } else if (node.type === Syntax.FunctionExpression) {
-                parent = path[0];
-                if (parent.type === Syntax.AssignmentExpression) {
-                    if (typeof parent.left.range !== 'undefined') {
-                        functionList.push({
-                            name: code.slice(parent.left.range[0],
-                                      parent.left.range[1]).replace(/"/g, '\\"'),
-                            range: node.range,
-                            loc: node.loc,
-                            blockStart: node.body.range[0],
-                            treeNode: node,
-                            dependencies: []
-                        });
-                    }
-                } else if (parent.type === Syntax.VariableDeclarator) {
-                    functionList.push({
-                        name: parent.id.name,
-                        range: node.range,
-                        loc: node.loc,
-                        blockStart: node.body.range[0],
-                        treeNode: node,
-                        dependencies: []
-                    });
-                } else if (parent.type === Syntax.CallExpression) {
-                    functionList.push({
-                        name: parent.id ? parent.id.name : '[Anonymous]',
-                        range: node.range,
-                        loc: node.loc,
-                        blockStart: node.body.range[0],
-                        treeNode: node,
-                        dependencies: []
-                    });
-                } else if (typeof parent.length === 'number') {
-                    functionList.push({
-                        name: parent.id ? parent.id.name : '[Anonymous]',
-                        range: node.range,
-                        loc: node.loc,
-                        blockStart: node.body.range[0],
-                        treeNode: node,
-                        dependencies: []
-                    });
-                } else if (typeof parent.key !== 'undefined') {
-                    if (parent.key.type === 'Identifier') {
-                        if (parent.value === node && parent.key.name) {
-                            functionList.push({
-                                name: parent.key.name,
-                                range: node.range,
-                                loc: node.loc,
-                                blockStart: node.body.range[0],
-                                treeNode: node,
-                                dependencies: []
-                            });
-                        }
-                    }
-                }
+            if (!isEmpty(functionObject)) {
+                functionList.push(functionObject);
             }
+            
         });
 
         return functionList;
     }
 
+    function createFunctionObject(node, parent, code) {
+        var functionObject = {};
+
+        if (node.type === Syntax.FunctionDeclaration) {
+            functionObject = {
+                name: node.id.name
+            };
+        } else if (parent && node.type === Syntax.FunctionExpression) {
+            if (parent.type === Syntax.AssignmentExpression) {
+                if (typeof parent.left.range !== 'undefined') {
+                    functionObject = {
+                        name: code.slice(parent.left.range[0], parent.left.range[1]).replace(/"/g, '\\"')
+                    };
+                }
+            } else if (parent.type === Syntax.VariableDeclarator) {
+                functionObject = {
+                    name: parent.id.name
+                };
+            } else if (parent.type === Syntax.CallExpression) {
+                functionObject = {
+                    name: parent.id ? parent.id.name : '[Anonymous]'
+                };
+            } else if (typeof parent.length === 'number') {
+                functionObject = {
+                    name: parent.id ? parent.id.name : '[Anonymous]'
+                };
+            } else if (typeof parent.key !== 'undefined') {
+                if (parent.key.type === 'Identifier') {
+                    if (parent.value === node && parent.key.name) {
+                        functionObject = {
+                            name: parent.key.name
+                        };
+                    }
+                }
+            }
+        }
+
+        if (!isEmpty(functionObject)) {
+            functionObject.range = node.range;
+            functionObject.loc = node.loc;
+            functionObject.blockStart = node.body.range[0];
+            functionObject.treeNode = node;
+            functionObject.dependencies = [];
+            functionObject.children = [];
+        }
+
+        return functionObject;
+    }
+
+    //TODO: replace func with new Func constructor
+    // function Func (func) {
+    //     func.parent = functionParent;
+    //     func.children = [];
+    //     func.dependencies = [];
+    //     func.treeNode = node;
+
+    //     return func;
+    // }
+
+    //create tree of scoped functions
+    function getFunctionTree (node, code) {
+        var functionTree = {
+                name: 'root',
+                parent: null,
+                children: [],
+                treeNode: node
+            };
+        createFunctionTree(node, code, functionTree);
+
+        return functionTree;
+    }
+
+    function setFunctionTreeDependencies (functionTree){
+        traverseFunctionTree(functionTree, function (node, path) {
+            var scopedList = [];
+                parent = node;
+
+            if (!node.parent) {
+
+            }
+            while (parent) {
+                if (parent && parent.children) {
+                    scopedList = scopedList.concat(parent.children);
+                }
+                parent = parent.parent;
+            }
+            node.dependencies = getDependencies(node.treeNode, scopedList);
+        });
+        return functionTree;
+    }
+
+
+
+    function getFunctionParent (path) {
+        var i,
+            pathLength = path.length,
+            node;
+
+        for (i = 0; i < pathLength; i++ ) {
+            node = path[i];
+
+            if (node.type === Syntax.FunctionDeclaration) {
+                return node;
+
+            } else if (node.type === Syntax.FunctionExpression) {
+                parent = path[0];
+                if (parent.type === Syntax.AssignmentExpression) {
+                    if (typeof parent.left.range !== 'undefined') {
+                        return node;
+                    }
+                } else if (parent.type === Syntax.VariableDeclarator) {
+                    return node;
+                } else if (parent.type === Syntax.CallExpression) {
+                    return node;
+                } else if (typeof parent.length === 'number') {
+                    return node;
+                } else if (typeof parent.key !== 'undefined') {
+                    if (parent.key.type === 'Identifier') {
+                        if (parent.value === node && parent.key.name) {
+                            return node;
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+    
     function setParentFunctions (functionList) {
         var i,
             j, 
@@ -236,6 +380,18 @@ var formattedList;
         }
 
         return functionList;
+    }
+
+    //walk up the parents and add all their children
+    function getNodeScope (node, scopeList) {
+        scopeList = scopeList ? scopeList : [];
+
+        if (node && node.parent) {
+            scopeList = scopeList.concat(node.parent.children);
+            getNodeScope(node.parent, scopeList);
+        }
+        
+        return scopeList;
     }
 
 
@@ -284,21 +440,21 @@ var formattedList;
         return functionList;
     }
 
-    function modify(code, modifiers) {
-        var i;
+    // function modify(code, modifiers) {
+    //     var i;
 
-        if (Object.prototype.toString.call(modifiers) === '[object Array]') {
-            for (i = 0; i < modifiers.length; i += 1) {
-                code = modifiers[i].call(null, code);
-            }
-        } else if (typeof modifiers === 'function') {
-            code = modifiers.call(null, code);
-        } else {
-            throw new Error('Wrong use of esmorph.modify() function');
-        }
+    //     if (Object.prototype.toString.call(modifiers) === '[object Array]') {
+    //         for (i = 0; i < modifiers.length; i += 1) {
+    //             code = modifiers[i].call(null, code);
+    //         }
+    //     } else if (typeof modifiers === 'function') {
+    //         code = modifiers.call(null, code);
+    //     } else {
+    //         throw new Error('Wrong use of esmorph.modify() function');
+    //     }
 
-        return code;
-    }
+    //     return code;
+    // }
 
     function setDependencies (functionList) {
         var i,
@@ -313,58 +469,60 @@ var formattedList;
             // console.log("functionList: ", functionList, ", length = ", functionList.length);
             //console.log("scopedList: ", scopedList.map(function(x){return x.name}), ", node = ", func.name);
 
-            traverse(node, function (element, path) {
-                var funcIndex,
-                    existingIndex,
-                    parent = path[0],
-                    isAFunction = false;
-
-                if (parent === node) {
-                    return;
-                }
-
-
-                if (parent && parent.type === Syntax.CallExpression) {
-                    isAFunction = true;
-                } else if (parent && parent.property === element) {
-                    
-
-                    //console.log("found a parent property");
-                    isAFunction = true;
-                }
-                
-                //test
-                if (getBaseName(element) == 'swap'){
-                    console.log("found the swap property function!");
-                    console.log("element: ", element);
-
-                }                
-                
-                if (isAFunction && element.name) {
-                    funcIndex = scopedList.map(function (funcObject) {
-                        return getBaseName(funcObject);
-                    }).indexOf(getBaseName(element));
-
-                    //console.log("element: ", element.name ,", scopedList: ", scopedList.map(function(x) {return x.name}), ", funcIndex: ", funcIndex);
-
-                    if (funcIndex >= 0) {
-                        existingIndex = func.dependencies.map(function (funcObject) {
-                            return getBaseName(funcObject);
-                        }).indexOf(getBaseName(element));
-
-                        //console.log("element: ", element ,", scopedList: ", scopedList.map(function(node) {return node.name}), ", funcIndex: ", funcIndex, ", existingIndex: ", existingIndex, ", element.type: ", element.type);
-
-                        if (existingIndex === -1) {
-                            //console.log("adding to children");
-
-                            func.dependencies.push(scopedList[funcIndex]);
-                        }
-                    }    
-                }
-            });
+            func.dependencies = getDependencies(node, scopedList);
         }
 
         return functionList;
+    }
+
+    function getDependencies (node, scopedList) {
+        var children = [];
+
+
+        traverse(node, function (element, path) {
+            var funcIndex,
+                existingIndex,
+                parent = path[0],
+                isAFunction = false;
+
+            if (parent === node) {
+                return;
+            }
+
+
+            if (parent && parent.type === Syntax.CallExpression) {
+                isAFunction = true;
+            } else if (parent && parent.property === element) {
+                
+
+                //console.log("found a parent property");
+                isAFunction = true;
+            }           
+            
+            if (isAFunction && element.name) {
+                funcIndex = scopedList.map(function (funcObject) {
+                    return getBaseName(funcObject);
+                }).indexOf(getBaseName(element));
+
+                //console.log("element: ", element.name ,", scopedList: ", scopedList.map(function(x) {return x.name}), ", funcIndex: ", funcIndex);
+
+                if (funcIndex >= 0) {
+                    existingIndex = children.map(function (funcObject) {
+                        return getBaseName(funcObject);
+                    }).indexOf(getBaseName(element));
+
+                    //console.log("element: ", element ,", scopedList: ", scopedList.map(function(node) {return node.name}), ", funcIndex: ", funcIndex, ", existingIndex: ", existingIndex, ", element.type: ", element.type);
+
+                    if (existingIndex === -1) {
+                        //console.log("adding to children");
+
+                        children.push(scopedList[funcIndex]);
+                    }
+                }    
+            }
+        });
+
+        return children;
     }
 
     //get id by stringifyting the unique range
@@ -396,11 +554,9 @@ var formattedList;
         }
     }
 
-    //old
-    exports.modify = modify;
-
     exports.Tracer = {
-        FunctionEntrance: traceFunctionEntrance
+        init: init
+        //FunctionEntrance: traceFunctionEntrance
     };
 
 }(typeof exports === 'undefined' ? (esmorph = {}) : exports));
