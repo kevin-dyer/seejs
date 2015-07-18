@@ -129,6 +129,10 @@
                         if (getNodeScope(parentFunction).concat(parentFunction.children).indexOf(functionObject) < 0) {
                             functionObject.parent = parentFunction;
                             parentFunction.children.push(functionObject);
+                            // console.log("functionTree: ", functionTree);
+                            // console.log("parent: ", parentFunction);
+                            // console.log("adding: ", functionObject);
+                            // console.log("to children: ", parentFunction.children);
                         }
                         createFunctionTree(child, code, functionTree, path, functionObject);
                     } else {
@@ -166,53 +170,54 @@
         functionTree = getFunctionTree(tree, code);
         functionTree = setFunctionTreeDependencies(functionTree);
         console.log("functionTree!!!, ", functionTree);
+        makeTree(functionTree);
 
-        functionList = getFunctionList(tree, code);
-        functionList = setParentFunctions(functionList);
-        functionList = setScopedFunctionList(functionList);
-        functionList = setDependencies(functionList);
+        // functionList = getFunctionList(tree, code);
+        // functionList = setParentFunctions(functionList);
+        // functionList = setScopedFunctionList(functionList);
+        // functionList = setDependencies(functionList);
 
 
 
-        formattedList = {
-            name: '',
-            dependencies: getScopedFunctionList(null, functionList).map(function(ele) {
-                return {
-                    name: ele.name === '[Anonymous]' ? '' : ele.name,
-                    dependencies: ele.dependencies
-                };
-            })
-        };
+        // formattedList = {
+        //     name: '',
+        //     dependencies: getScopedFunctionList(null, functionList).map(function(ele) {
+        //         return {
+        //             name: ele.name === '[Anonymous]' ? '' : ele.name,
+        //             dependencies: ele.dependencies
+        //         };
+        //     })
+        // };
 
-        //remove root node if there is only one dependency.
-        if (formattedList.dependencies.length === 1) {
-            formattedList = formattedList.dependencies[0];
-        }
+        // //remove root node if there is only one dependency.
+        // if (formattedList.dependencies.length === 1) {
+        //     formattedList = formattedList.dependencies[0];
+        // }
         
-        makeTree(formattedList);
+        // //makeTree(formattedList);
 
         
-        console.log("functionList: ", functionList);
-        console.log("formatted list: ", formattedList);
+        // console.log("functionList: ", functionList);
+        // console.log("formatted list: ", formattedList);
 
         return code;
     }
 
-    function getFunctionList (node, code) {
-        var functionList = [];
+    // function getFunctionList (node, code) {
+    //     var functionList = [];
 
-        traverse(node, function (node, path) {
-            var parent = (path && path[0]) ? path[0] : {},
-                functionObject = createFunctionObject(node, path[0], code);
+    //     traverse(node, function (node, path) {
+    //         var parent = (path && path[0]) ? path[0] : {},
+    //             functionObject = createFunctionObject(node, path[0], code);
 
-            if (!isEmpty(functionObject)) {
-                functionList.push(functionObject);
-            }
+    //         if (!isEmpty(functionObject)) {
+    //             functionList.push(functionObject);
+    //         }
             
-        });
+    //     });
 
-        return functionList;
-    }
+    //     return functionList;
+    // }
 
     function createFunctionObject(node, parent, code) {
         var functionObject = {};
@@ -291,9 +296,6 @@
             var scopedList = [];
                 parent = node;
 
-            if (!node.parent) {
-
-            }
             while (parent) {
                 if (parent && parent.children) {
                     scopedList = scopedList.concat(parent.children);
@@ -307,80 +309,80 @@
 
 
 
-    function getFunctionParent (path) {
-        var i,
-            pathLength = path.length,
-            node;
+    // function getFunctionParent (path) {
+    //     var i,
+    //         pathLength = path.length,
+    //         node;
 
-        for (i = 0; i < pathLength; i++ ) {
-            node = path[i];
+    //     for (i = 0; i < pathLength; i++ ) {
+    //         node = path[i];
 
-            if (node.type === Syntax.FunctionDeclaration) {
-                return node;
+    //         if (node.type === Syntax.FunctionDeclaration) {
+    //             return node;
 
-            } else if (node.type === Syntax.FunctionExpression) {
-                parent = path[0];
-                if (parent.type === Syntax.AssignmentExpression) {
-                    if (typeof parent.left.range !== 'undefined') {
-                        return node;
-                    }
-                } else if (parent.type === Syntax.VariableDeclarator) {
-                    return node;
-                } else if (parent.type === Syntax.CallExpression) {
-                    return node;
-                } else if (typeof parent.length === 'number') {
-                    return node;
-                } else if (typeof parent.key !== 'undefined') {
-                    if (parent.key.type === 'Identifier') {
-                        if (parent.value === node && parent.key.name) {
-                            return node;
-                        }
-                    }
-                }
+    //         } else if (node.type === Syntax.FunctionExpression) {
+    //             parent = path[0];
+    //             if (parent.type === Syntax.AssignmentExpression) {
+    //                 if (typeof parent.left.range !== 'undefined') {
+    //                     return node;
+    //                 }
+    //             } else if (parent.type === Syntax.VariableDeclarator) {
+    //                 return node;
+    //             } else if (parent.type === Syntax.CallExpression) {
+    //                 return node;
+    //             } else if (typeof parent.length === 'number') {
+    //                 return node;
+    //             } else if (typeof parent.key !== 'undefined') {
+    //                 if (parent.key.type === 'Identifier') {
+    //                     if (parent.value === node && parent.key.name) {
+    //                         return node;
+    //                     }
+    //                 }
+    //             }
 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
     
-    function setParentFunctions (functionList) {
-        var i,
-            j, 
-            listLength = functionList.length,
-            node,
-            temp,
-            best = null;
+    // function setParentFunctions (functionList) {
+    //     var i,
+    //         j, 
+    //         listLength = functionList.length,
+    //         node,
+    //         temp,
+    //         best = null;
 
-        for(i = 0; i < listLength; i++ ) {
-            node = functionList[i];
-            best = null;
+    //     for(i = 0; i < listLength; i++ ) {
+    //         node = functionList[i];
+    //         best = null;
 
-            //set parent of node as the most tightly wrapped node
-            for (j = 0; j < listLength; j++ ) {
-                if (j === i ) {
-                    continue;
-                }
-                temp = functionList[j];
+    //         //set parent of node as the most tightly wrapped node
+    //         for (j = 0; j < listLength; j++ ) {
+    //             if (j === i ) {
+    //                 continue;
+    //             }
+    //             temp = functionList[j];
                     
-                //only consider temp functions which wrap around the node function
-                if (temp.range[0] <= node.range[0] && temp.range[1] >= node.range[1]) {
-                    //init
-                    if (!best) {
-                        best = temp;
-                        continue;
-                    }
+    //             //only consider temp functions which wrap around the node function
+    //             if (temp.range[0] <= node.range[0] && temp.range[1] >= node.range[1]) {
+    //                 //init
+    //                 if (!best) {
+    //                     best = temp;
+    //                     continue;
+    //                 }
 
-                    //find tightest wrapped parent
-                    if (temp.range[0] >= best.range[0] && temp.range[1] <= best.range[1]) {
-                        best = temp;
-                    }
-                }
-            }
+    //                 //find tightest wrapped parent
+    //                 if (temp.range[0] >= best.range[0] && temp.range[1] <= best.range[1]) {
+    //                     best = temp;
+    //                 }
+    //             }
+    //         }
 
-            node.myParent = best;
-        }
+    //         node.myParent = best;
+    //     }
 
-        return functionList;
-    }
+    //     return functionList;
+    // }
 
     //walk up the parents and add all their children
     function getNodeScope (node, scopeList) {
@@ -396,49 +398,49 @@
 
 
     //this should call itself with its parent node until it is null
-    function getScopedFunctionList (node, functionList, originalNode) {
-        var children = [],
-            i,
-            listLength = functionList.length,
-            func;
+    // function getScopedFunctionList (node, functionList, originalNode) {
+    //     var children = [],
+    //         i,
+    //         listLength = functionList.length,
+    //         func;
 
-        originalNode = originalNode ? originalNode : node;
+    //     originalNode = originalNode ? originalNode : node;
 
-        // if (node.name === '[Anonymous]') {
-        //     return [node.myParent];
-        // }
-        for(i = 0; i < listLength; i++ ){
-            func = functionList[i];
+    //     // if (node.name === '[Anonymous]') {
+    //     //     return [node.myParent];
+    //     // }
+    //     for(i = 0; i < listLength; i++ ){
+    //         func = functionList[i];
 
-            //anonymouse functions can only be called by their parent
-            if (func.name === '[Anonymous]' && func.myParent !== originalNode) {
-                continue;
-            }
+    //         //anonymouse functions can only be called by their parent
+    //         if (func.name === '[Anonymous]' && func.myParent !== originalNode) {
+    //             continue;
+    //         }
 
-            if (func.myParent === node) {
-                children.push(func);
-            }
-        }
-        if (node) {
-            //recurs
-            children = children.concat(getScopedFunctionList(node.myParent, functionList, originalNode));
-        }
+    //         if (func.myParent === node) {
+    //             children.push(func);
+    //         }
+    //     }
+    //     if (node) {
+    //         //recurs
+    //         children = children.concat(getScopedFunctionList(node.myParent, functionList, originalNode));
+    //     }
 
-        return children;
-    }
+    //     return children;
+    // }
 
-    function setScopedFunctionList (functionList) {
-        var i,
-            listLength = functionList.length,
-            node;
+    // function setScopedFunctionList (functionList) {
+    //     var i,
+    //         listLength = functionList.length,
+    //         node;
 
-        for (i = 0; i < listLength; i++) {
-            node = functionList[i];
-            node.scopedFunctions = getScopedFunctionList(node, functionList);
-        }
+    //     for (i = 0; i < listLength; i++) {
+    //         node = functionList[i];
+    //         node.scopedFunctions = getScopedFunctionList(node, functionList);
+    //     }
 
-        return functionList;
-    }
+    //     return functionList;
+    // }
 
     // function modify(code, modifiers) {
     //     var i;
@@ -456,24 +458,24 @@
     //     return code;
     // }
 
-    function setDependencies (functionList) {
-        var i,
-            listLength = functionList.length;
+    // function setDependencies (functionList) {
+    //     var i,
+    //         listLength = functionList.length;
 
-        //find dependencies for one functionObj at a time
-        for(i = 0; i < listLength; i++) {
-            var func = functionList[i],
-                node = func.treeNode,
-                scopedList = func.scopedFunctions;
+    //     //find dependencies for one functionObj at a time
+    //     for(i = 0; i < listLength; i++) {
+    //         var func = functionList[i],
+    //             node = func.treeNode,
+    //             scopedList = func.scopedFunctions;
 
-            // console.log("functionList: ", functionList, ", length = ", functionList.length);
-            //console.log("scopedList: ", scopedList.map(function(x){return x.name}), ", node = ", func.name);
+    //         // console.log("functionList: ", functionList, ", length = ", functionList.length);
+    //         //console.log("scopedList: ", scopedList.map(function(x){return x.name}), ", node = ", func.name);
 
-            func.dependencies = getDependencies(node, scopedList);
-        }
+    //         func.dependencies = getDependencies(node, scopedList);
+    //     }
 
-        return functionList;
-    }
+    //     return functionList;
+    // }
 
     function getDependencies (node, scopedList) {
         var children = [];
