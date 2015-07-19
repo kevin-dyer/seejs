@@ -10,7 +10,6 @@ function makeTree(functionTree) {
 
       root = functionTree;
       toggle(root);
-      debugger
 
   var tree = d3.layout.tree()
       .size([h, w]);
@@ -66,13 +65,13 @@ function makeTree(functionTree) {
 
     nodeEnter.append("svg:circle")
         .attr("r", 1e-6)
-        .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+        .style("fill", function(d) { return d.dependencies.length ? "lightsteelblue" : "#fff"; });
 
     nodeEnter.append("svg:text")
-        .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+        .attr("x", function(d) { return d.children || d.dependencies.length ? -10 : 10; })
         .attr("dy", ".35em")
-        .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-        .text(function(d) { return d.name; })
+        .attr("text-anchor", function(d) { return d.children || d.dependencies.length ? "end" : "start"; })
+        .text(function(d) { return d.name === '[Anonymous]' ? '' : d.name; })
         .style("fill-opacity", 1e-6);
 
     // Transition nodes to their new position.
@@ -82,7 +81,7 @@ function makeTree(functionTree) {
 
     nodeUpdate.select("circle")
         .attr("r", 4.5)
-        .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+        .style("fill", function(d) { return d.dependencies.length ? "lightsteelblue" : "#fff"; });
 
     nodeUpdate.select("text")
         .style("fill-opacity", 1);

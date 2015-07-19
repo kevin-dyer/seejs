@@ -76,7 +76,7 @@
             return;
         }
 
-        children = object.children;
+        children = object.myChildren;
         childrenLength = children.length;
         for(i = 0; i < childrenLength; i++) {
             child = children[i];
@@ -126,9 +126,9 @@
 
                 if (typeof child === 'object' && child !== null) {
                     if (!isEmpty(functionObject)) {
-                        if (getNodeScope(parentFunction).concat(parentFunction.children).indexOf(functionObject) < 0) {
+                        if (getNodeScope(parentFunction).concat(parentFunction.myChildren).indexOf(functionObject) < 0) {
                             functionObject.parent = parentFunction;
-                            parentFunction.children.push(functionObject);
+                            parentFunction.myChildren.push(functionObject);
                             // console.log("functionTree: ", functionTree);
                             // console.log("parent: ", parentFunction);
                             // console.log("adding: ", functionObject);
@@ -170,6 +170,8 @@
         functionTree = getFunctionTree(tree, code);
         functionTree = setFunctionTreeDependencies(functionTree);
         console.log("functionTree!!!, ", functionTree);
+
+        //transform children to myChildren
         makeTree(functionTree);
 
         // functionList = getFunctionList(tree, code);
@@ -262,7 +264,7 @@
             functionObject.blockStart = node.body.range[0];
             functionObject.treeNode = node;
             functionObject.dependencies = [];
-            functionObject.children = [];
+            functionObject.myChildren = [];
         }
 
         return functionObject;
@@ -283,7 +285,7 @@
         var functionTree = {
                 name: 'root',
                 parent: null,
-                children: [],
+                myChildren: [],
                 treeNode: node
             };
         createFunctionTree(node, code, functionTree);
@@ -293,189 +295,41 @@
 
     function setFunctionTreeDependencies (functionTree){
         traverseFunctionTree(functionTree, function (node, path) {
-            var scopedList = [];
-                parent = node;
+            var scopedList = [],
+                parent = node,
+                func,
+                i,
+                childLength = node.myChildren.length;
 
             while (parent) {
-                if (parent && parent.children) {
-                    scopedList = scopedList.concat(parent.children);
+                if (parent && parent.myChildren) {
+                    scopedList = scopedList.concat(parent.myChildren);
                 }
                 parent = parent.parent;
             }
             node.dependencies = getDependencies(node.treeNode, scopedList);
+
+            for (i = 0; i < childLength; i++) {
+                func = node.myChildren[i];
+                if (func.name === "[Anonymous]"){
+                    node.dependencies.push(func);
+                }
+            }
         });
         return functionTree;
     }
-
-
-
-    // function getFunctionParent (path) {
-    //     var i,
-    //         pathLength = path.length,
-    //         node;
-
-    //     for (i = 0; i < pathLength; i++ ) {
-    //         node = path[i];
-
-    //         if (node.type === Syntax.FunctionDeclaration) {
-    //             return node;
-
-    //         } else if (node.type === Syntax.FunctionExpression) {
-    //             parent = path[0];
-    //             if (parent.type === Syntax.AssignmentExpression) {
-    //                 if (typeof parent.left.range !== 'undefined') {
-    //                     return node;
-    //                 }
-    //             } else if (parent.type === Syntax.VariableDeclarator) {
-    //                 return node;
-    //             } else if (parent.type === Syntax.CallExpression) {
-    //                 return node;
-    //             } else if (typeof parent.length === 'number') {
-    //                 return node;
-    //             } else if (typeof parent.key !== 'undefined') {
-    //                 if (parent.key.type === 'Identifier') {
-    //                     if (parent.value === node && parent.key.name) {
-    //                         return node;
-    //                     }
-    //                 }
-    //             }
-
-    //         }
-    //     }
-    // }
-    
-    // function setParentFunctions (functionList) {
-    //     var i,
-    //         j, 
-    //         listLength = functionList.length,
-    //         node,
-    //         temp,
-    //         best = null;
-
-    //     for(i = 0; i < listLength; i++ ) {
-    //         node = functionList[i];
-    //         best = null;
-
-    //         //set parent of node as the most tightly wrapped node
-    //         for (j = 0; j < listLength; j++ ) {
-    //             if (j === i ) {
-    //                 continue;
-    //             }
-    //             temp = functionList[j];
-                    
-    //             //only consider temp functions which wrap around the node function
-    //             if (temp.range[0] <= node.range[0] && temp.range[1] >= node.range[1]) {
-    //                 //init
-    //                 if (!best) {
-    //                     best = temp;
-    //                     continue;
-    //                 }
-
-    //                 //find tightest wrapped parent
-    //                 if (temp.range[0] >= best.range[0] && temp.range[1] <= best.range[1]) {
-    //                     best = temp;
-    //                 }
-    //             }
-    //         }
-
-    //         node.myParent = best;
-    //     }
-
-    //     return functionList;
-    // }
 
     //walk up the parents and add all their children
     function getNodeScope (node, scopeList) {
         scopeList = scopeList ? scopeList : [];
 
         if (node && node.parent) {
-            scopeList = scopeList.concat(node.parent.children);
+            scopeList = scopeList.concat(node.parent.myChildren);
             getNodeScope(node.parent, scopeList);
         }
         
         return scopeList;
     }
-
-
-    //this should call itself with its parent node until it is null
-    // function getScopedFunctionList (node, functionList, originalNode) {
-    //     var children = [],
-    //         i,
-    //         listLength = functionList.length,
-    //         func;
-
-    //     originalNode = originalNode ? originalNode : node;
-
-    //     // if (node.name === '[Anonymous]') {
-    //     //     return [node.myParent];
-    //     // }
-    //     for(i = 0; i < listLength; i++ ){
-    //         func = functionList[i];
-
-    //         //anonymouse functions can only be called by their parent
-    //         if (func.name === '[Anonymous]' && func.myParent !== originalNode) {
-    //             continue;
-    //         }
-
-    //         if (func.myParent === node) {
-    //             children.push(func);
-    //         }
-    //     }
-    //     if (node) {
-    //         //recurs
-    //         children = children.concat(getScopedFunctionList(node.myParent, functionList, originalNode));
-    //     }
-
-    //     return children;
-    // }
-
-    // function setScopedFunctionList (functionList) {
-    //     var i,
-    //         listLength = functionList.length,
-    //         node;
-
-    //     for (i = 0; i < listLength; i++) {
-    //         node = functionList[i];
-    //         node.scopedFunctions = getScopedFunctionList(node, functionList);
-    //     }
-
-    //     return functionList;
-    // }
-
-    // function modify(code, modifiers) {
-    //     var i;
-
-    //     if (Object.prototype.toString.call(modifiers) === '[object Array]') {
-    //         for (i = 0; i < modifiers.length; i += 1) {
-    //             code = modifiers[i].call(null, code);
-    //         }
-    //     } else if (typeof modifiers === 'function') {
-    //         code = modifiers.call(null, code);
-    //     } else {
-    //         throw new Error('Wrong use of esmorph.modify() function');
-    //     }
-
-    //     return code;
-    // }
-
-    // function setDependencies (functionList) {
-    //     var i,
-    //         listLength = functionList.length;
-
-    //     //find dependencies for one functionObj at a time
-    //     for(i = 0; i < listLength; i++) {
-    //         var func = functionList[i],
-    //             node = func.treeNode,
-    //             scopedList = func.scopedFunctions;
-
-    //         // console.log("functionList: ", functionList, ", length = ", functionList.length);
-    //         //console.log("scopedList: ", scopedList.map(function(x){return x.name}), ", node = ", func.name);
-
-    //         func.dependencies = getDependencies(node, scopedList);
-    //     }
-
-    //     return functionList;
-    // }
 
     function getDependencies (node, scopedList) {
         var children = [];
