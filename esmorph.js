@@ -171,8 +171,17 @@
         functionTree = setFunctionTreeDependencies(functionTree);
         console.log("functionTree!!!, ", functionTree);
 
-        //transform children to myChildren
-        makeTree(functionTree);
+        // TREE
+        //makeTree(functionTree);
+
+        // BUBBLE
+        functionTree = convertToChildren(functionTree);
+        makeBubbleChart(functionTree);
+
+        // SANKEY
+        //var sankeyData = getSankeyData(functionTree);
+        // console.log("sankeyData: ", sankeyData);
+        // makeSankeyPlot(sankeyData);
 
         // functionList = getFunctionList(tree, code);
         // functionList = setParentFunctions(functionList);
@@ -205,21 +214,51 @@
         return code;
     }
 
-    // function getFunctionList (node, code) {
-    //     var functionList = [];
 
-    //     traverse(node, function (node, path) {
-    //         var parent = (path && path[0]) ? path[0] : {},
-    //             functionObject = createFunctionObject(node, path[0], code);
+    function convertToChildren (functionTree) {
+        var parent = functionTree;
 
-    //         if (!isEmpty(functionObject)) {
-    //             functionList.push(functionObject);
-    //         }
-            
-    //     });
+        function traverseChild (parent) {
+            var i, 
+                childLength,
+                child;
 
-    //     return functionList;
-    // }
+            //convert myChildren to children
+            parent.children = parent.myChildren;
+            parent.size = parent.dependencies.length * 2 + 1;
+            delete parent.myChildren;
+
+            childLength = parent.children.length;
+            for(i = 0; i < childLength; i++) {
+                child = parent.children[i];
+                traverseChild(child);
+            }
+        }
+        traverseChild(parent);
+
+        return functionTree;
+    }
+
+    function getSankeyData (functionTree) {
+        var nodes = [],
+            links = [];
+
+        traverseFunctionTree(functionTree, function(node, path) {
+            nodes.push(node);
+            if (node && node.parent) {
+                links.push({
+                    source: node.parent,
+                    target: node,
+                    value: node.dependencies.length * 2 + 1
+                });
+            }
+        });
+
+        return {
+            nodes: nodes,
+            links: links
+        }
+    }
 
     function createFunctionObject(node, parent, code) {
         var functionObject = {};
