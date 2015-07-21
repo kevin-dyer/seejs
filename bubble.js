@@ -7,7 +7,7 @@ function makeBubbleChart (root)  {
         node;
 
   var pack = d3.layout.pack()
-      .sort(null)
+      //.sort(null)
       .size([r, r])
       .value(function(d) { return d.size; });
 
@@ -22,13 +22,12 @@ function makeBubbleChart (root)  {
   console.log("root: ", root);
 
   function update(rootNode) {
-    var nodes;
-
-    // pack = d3.layout.pack()
-    //   .size([r, r])
-    //   .value(function(d) { return d.size; });
+    var nodes,
+        links;
 
     nodes = pack.nodes(rootNode);
+    links = pack.links(rootNode);
+
 
     var circles = vis.selectAll("circle")
         .data(nodes);
@@ -64,6 +63,9 @@ function makeBubbleChart (root)  {
           }
         })
         .on("click", function(d) { toggleDependencies(d);});
+        // .on("hover", function(d) {
+
+        // })
 
     circles.exit()
       .remove();
@@ -93,33 +95,44 @@ function makeBubbleChart (root)  {
   var lastNode;
   function toggleDependencies (d) {
     //remove dependencies from last node
-    if (lastNode) {
+    // if (lastNode) {
       
-      console.log("last node children: ", lastNode.children.length);
-      lastNode.children = lastNode.children.filter(function(child) {
-        //console.log("child type (",child.type,") !== dependency: ", child.type !== 'dependency');
-        return child.type !== 'dependency';
-      });
-      console.log("last node children: ", lastNode.children.length);
-      lastNode = null;
-    }
-    //console.log("d.type = ", d.type);
-    if (d.type === 'dependency'){
-      console.log("root: ", root);
-      update(root);
-      //console.log("node type is dependency");
-      return;
-    }
-    d.children = d.children.concat(d.dependencies.map(function(dep) {
-    //NOTE: size should be brought down to only 30% of parent vol
-      return {name: dep.name, type: 'dependency', size: 2};
-    }));
+    //   console.log("last node children: ", lastNode.children.length);
+    //   lastNode.children = lastNode.children.filter(function(child) {
+    //     //console.log("child type (",child.type,") !== dependency: ", child.type !== 'dependency');
+    //     return child.type !== 'dependency';
+    //   });
+    //   console.log("last node children: ", lastNode.children.length);
+    //   lastNode = null;
+    // }
+    // //console.log("d.type = ", d.type);
+    // if (d.type === 'dependency'){
+    //   console.log("root: ", root);
+    //   update(root);
+    //   //console.log("node type is dependency");
+    //   return;
+    // }
+    // d.children = d.children.concat(d.dependencies.map(function(dep) {
+    // //NOTE: size should be brought down to only 30% of parent vol
+    //   return {name: dep.name, type: 'dependency', size: 2};
+    // }));
     
     //console.log("root: ", root);
-    //zoom(node == d ? root : d);
-    update(root);
+    zoom(node == d ? root : d);
 
-    lastNode = d;
+    // var link = vis.selectAll("path")
+    //   .data(d.dependencies.map(function(dep){
+    //     return {source: d, target: dep};
+    //   }))
+
+
+    //     //[{source: d, target: d}])
+    //   .enter().append("path")
+    //   .attr("d", d3.svg.diagonal());
+
+    //pdate(root);
+
+    //lastNode = d;
   }
     
 
