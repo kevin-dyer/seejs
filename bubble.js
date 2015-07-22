@@ -19,17 +19,16 @@ function makeBubbleChart (root)  {
 
   node = root; //for zoom
 
-  console.log("root: ", root);
+  //console.log("root: ", root);
 
   function update(rootNode) {
     var nodes,
-        links;
+        circles,
+        labesl;
 
     nodes = pack.nodes(rootNode);
-    links = pack.links(rootNode);
 
-
-    var circles = vis.selectAll("circle")
+    circles = vis.selectAll("circle")
         .data(nodes);
 
     circles
@@ -48,29 +47,25 @@ function makeBubbleChart (root)  {
         .attr("cy", function(d) { return d.y; })
         .attr("r", function(d) { return d.r; });
         
-
     circles.enter().append("svg:circle")
-        .attr("class", function(d) { 
-          return d.children ? "parent" : "child"; })
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; })
-        .attr("r", function(d) { return d.r; })
-        .style("stroke", function(d) {
-          if (d.type && d.type === 'dependency') {
-            return "black";
-          } else {
-            return "#999";
-          }
-        })
-        .on("click", function(d) { toggleDependencies(d);});
-        // .on("hover", function(d) {
-
-        // })
+      .attr("class", function(d) { 
+        return d.children ? "parent" : "child"; })
+      .attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; })
+      .attr("r", function(d) { return d.r; })
+      .style("stroke", function(d) {
+        if (d.type && d.type === 'dependency') {
+          return "black";
+        } else {
+          return "#999";
+        }
+      })
+      .on("click", function(d, i) { toggleDependencies(d, i);});
 
     circles.exit()
       .remove();
 
-    var labels = vis.selectAll("text")
+    labels = vis.selectAll("text")
         .data(nodes);
 
     labels.attr("class", function(d) { return d.children ? "parent" : "child"; })
@@ -92,58 +87,81 @@ function makeBubbleChart (root)  {
   update(root);
 
 
-  var lastNode;
-  function toggleDependencies (d) {
-    //remove dependencies from last node
-    // if (lastNode) {
-      
-    //   console.log("last node children: ", lastNode.children.length);
-    //   lastNode.children = lastNode.children.filter(function(child) {
-    //     //console.log("child type (",child.type,") !== dependency: ", child.type !== 'dependency');
-    //     return child.type !== 'dependency';
-    //   });
-    //   console.log("last node children: ", lastNode.children.length);
-    //   lastNode = null;
-    // }
-    // //console.log("d.type = ", d.type);
-    // if (d.type === 'dependency'){
-    //   console.log("root: ", root);
-    //   update(root);
-    //   //console.log("node type is dependency");
-    //   return;
-    // }
-    // d.children = d.children.concat(d.dependencies.map(function(dep) {
-    // //NOTE: size should be brought down to only 30% of parent vol
-    //   return {name: dep.name, type: 'dependency', size: 2};
-    // }));
+  function toggleDependencies (d, i) {
     
-    //console.log("root: ", root);
-    zoom(node == d ? root : d);
+    //zoom(node == d ? root : d);
 
-    // var link = vis.selectAll("path")
-    //   .data(d.dependencies.map(function(dep){
-    //     return {source: d, target: dep};
-    //   }))
+    //highlighting self and dependencies
+    var circles = vis.selectAll("circle"),
+        thisD = d,
+        thisI = i,
+        links = [],
+        paths;
+
+    circles.style("stroke", function(d, i) {
+
+      if (i === thisI) {
+        return "red";
+        //TODO: can I match objects with indexOf?
+      } else if (thisD.dependencies.indexOf(d) >= 0) {
+        return "black";
+      } else {
+        return "steelblue";
+      }
+    }).style("stroke-width", 1.5);
 
 
-    //     //[{source: d, target: d}])
-    //   .enter().append("path")
-    //   .attr("d", d3.svg.diagonal());
+    if (d.dependencies.length === 0) {
+      return;
+    }
+    //TODO: move to addLinks function (d)
+    links = d.dependencies.map(function(dep) {
+      return {
+        "source": d,
+        "target": dep
+      };
+    });
 
-    //pdate(root);
+    paths = vis.selectAll(".link")
+        .data(links);
 
-    //lastNode = d;
+    paths.enter().append("svg:path")
+      .attr("class", "link")
+      .style("stroke", "black")
+      .style("stroke-width", 3)
+      .style("stroke-linecap", "round")
+      .attr("opacity", 1)
+      .attr("d", d3.svg.diagonal());
+
+    paths.each(function(d) { d.totalLength = this.getTotalLength(); })
+      .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
+      .attr("stroke-dashoffset", function(d) { return d.totalLength; })
+      .transition()
+        .duration(function(d) {
+          return 300;
+        })
+        .ease("linear")
+        .attr("stroke-dashoffset", 0)
+      .transition()
+        .delay(300)
+        .duration(1000)
+        .attr("opacity", 1e-6)
+        .remove();
+
+    paths.exit().remove();
   }
     
 
   d3.select(window).on("click", function() { zoom(root); });
 
   function zoom(d, i) {
-    var k = r / d.r / 2;
+    var k = r / d.r / 2,
+        t;
+        
     x.domain([d.x - d.r, d.x + d.r]);
     y.domain([d.y - d.r, d.y + d.r]);
 
-    var t = vis.transition()
+    t = vis.transition()
         .duration(d3.event.altKey ? 7500 : 750);
 
     t.selectAll("circle")

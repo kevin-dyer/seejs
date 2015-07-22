@@ -396,15 +396,15 @@
             
             if (isAFunction && element.name) {
                 funcIndex = scopedList.map(function (funcObject) {
-                    return getBaseName(funcObject);
-                }).indexOf(getBaseName(element));
+                    return UTILS.getBaseName(funcObject);
+                }).indexOf(UTILS.getBaseName(element));
 
                 //console.log("element: ", element.name ,", scopedList: ", scopedList.map(function(x) {return x.name}), ", funcIndex: ", funcIndex);
 
                 if (funcIndex >= 0) {
                     existingIndex = children.map(function (funcObject) {
-                        return getBaseName(funcObject);
-                    }).indexOf(getBaseName(element));
+                        return UTILS.getBaseName(funcObject);
+                    }).indexOf(UTILS.getBaseName(element));
 
                     //console.log("element: ", element ,", scopedList: ", scopedList.map(function(node) {return node.name}), ", funcIndex: ", funcIndex, ", existingIndex: ", existingIndex, ", element.type: ", element.type);
 
@@ -418,26 +418,6 @@
         });
 
         return children;
-    }
-
-    //get id by stringifyting the unique range
-    function getId (functionObject) {
-        var range = functionObject.range;
-        return range[0].toString() + "-" + range[1].toString();
-    }
-
-    function getBaseName (functionObject) {
-        var name = functionObject.name,
-            namePath;
-
-        if (functionObject && name){
-            namePath = name.split('.');
-            //console.log("name: ", name, ", baseName: ", namePath[namePath.length - 1]);
-            
-            return namePath[namePath.length - 1];
-        } else {
-
-        }
     }
 
     function functionExists (name, functionList) {
