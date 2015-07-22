@@ -7,7 +7,7 @@ function makeBubbleChart (root)  {
         node;
 
   var pack = d3.layout.pack()
-      //.sort(null)
+      .sort(null)
       .size([r, r])
       .value(function(d) { return d.size; });
 
@@ -16,6 +16,13 @@ function makeBubbleChart (root)  {
       .attr("height", h)
     .append("svg:g")
       .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
+
+  //INIT TOOLTIP
+  /* Initialize tooltip */
+  var tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d.name; });
+
+  /* Invoke the tip in the context of your visualization */
+  vis.call(tip)
 
   node = root; //for zoom
 
@@ -60,7 +67,10 @@ function makeBubbleChart (root)  {
           return "#999";
         }
       })
-      .on("click", function(d, i) { toggleDependencies(d, i);});
+      .on("click", function(d, i) { toggleDependencies(d, i); })
+      .on("dblclick", function (d) {zoom(node == d ? root : d);d3.event.stopPropagation();})
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
 
     circles.exit()
       .remove();
@@ -127,25 +137,23 @@ function makeBubbleChart (root)  {
 
     paths.enter().append("svg:path")
       .attr("class", "link")
-      .style("stroke", "black")
-      .style("stroke-width", 3)
+      .style("stroke", "#9E9E9E")
+      .style("stroke-width", 30)
       .style("stroke-linecap", "round")
-      .attr("opacity", 1)
+      .attr("opacity", 0.80)
       .attr("d", d3.svg.diagonal());
 
     paths.each(function(d) { d.totalLength = this.getTotalLength(); })
       .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
       .attr("stroke-dashoffset", function(d) { return d.totalLength; })
       .transition()
-        .duration(function(d) {
-          return 300;
-        })
+        .duration(200)
         .ease("linear")
         .attr("stroke-dashoffset", 0)
       .transition()
-        .delay(300)
-        .duration(1000)
-        .attr("opacity", 1e-6)
+        .delay(200)
+        .duration(400)
+        .attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })
         .remove();
 
     paths.exit().remove();
@@ -157,7 +165,7 @@ function makeBubbleChart (root)  {
   function zoom(d, i) {
     var k = r / d.r / 2,
         t;
-        
+
     x.domain([d.x - d.r, d.x + d.r]);
     y.domain([d.y - d.r, d.y + d.r]);
 
