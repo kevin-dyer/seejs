@@ -30,7 +30,8 @@ function makeBubbleChart (root)  {
 
   function getBorderColor (d, i, thisD, thisI) {
     //console.log("d, i, thisD, thisI: ", !!d, ', ', i, ', ', !!thisD, ', ', thisI)
-    if (typeof thisI === 'number' && i === thisI) {
+    //if (typeof thisI === 'number' && i === thisI) {
+    if (thisD && d === thisD) {
       //console.log("self border color: ", selfBorderColor);
       return selfBorderColor;
     } else if (thisD && thisD.dependencies.indexOf(d) >= 0) {
@@ -112,8 +113,11 @@ function makeBubbleChart (root)  {
 
     nodes = pack.nodes(rootNode);
 
+
     circles = vis.selectAll("circle")
-        .data(nodes);
+        .data(nodes, function (d) {
+          return UTILS.getId(d);
+        });
 
     circles
       .attr("class", getClass)
@@ -156,8 +160,12 @@ function makeBubbleChart (root)  {
     circles.exit()
       .remove();
 
+    circles.order();
+
     labels = vis.selectAll("text")
-        .data(nodes);
+        .data(nodes, function (d) {
+          return UTILS.getId(d);
+        });
 
     labels.attr("class", getClass)
       .attr("x", function(d) { return d.x; })

@@ -2,8 +2,13 @@
     var utils = {
             getId: function (functionObject) {
                 var range = functionObject.range;
+
+                if (range) {
+                    return range[0].toString() + "-" + range[1].toString();
+                } else {
+                    return functionObject.name;
+                }
                 
-                return range[0].toString() + "-" + range[1].toString();
             },
             getBaseName: function (functionObject) {
                 var name = functionObject.name,
