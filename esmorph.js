@@ -169,6 +169,7 @@
         //init function tree
         functionTree = getFunctionTree(tree, code);
         functionTree = setFunctionTreeDependencies(functionTree);
+        functionTree = addHiddenChildren(functionTree);
         console.log("functionTree!!!, ", functionTree);
 
         // TREE
@@ -418,6 +419,22 @@
         });
 
         return children;
+    }
+
+    function addHiddenChildren (functionTree) {
+        traverseFunctionTree(functionTree, function(node, path) {
+            if (node && node.myChildren && node.myChildren.length === 1) {
+                node.myChildren.push({
+                    name: '',
+                    parent: node,
+                    myChildren:[],
+                    dependencies:[],
+                    treeNode: null,
+                    type: "hidden"
+                });
+            }
+        });
+        return functionTree;
     }
 
     function functionExists (name, functionList) {
