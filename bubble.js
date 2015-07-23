@@ -237,7 +237,7 @@ function makeBubbleChart (root)  {
         return d3.min([d.source.r * 2, d.target.r * 2, 25]);
       })
       .style("stroke-linecap", "round")
-      .attr("opacity", 0.40)
+      .attr("opacity", 0.60)
       .attr("d", d3.svg.diagonal());
 
     paths.each(function(d) { d.totalLength = this.getTotalLength(); })
