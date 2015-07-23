@@ -153,7 +153,7 @@ function makeBubbleChart (root)  {
         return getOpacity(d);
       })
       .on("click", function(d, i) { toggleDependencies(d, i); d3.event.stopPropagation();})
-      .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
+      .on("dblclick", function (d) {vis.selectAll('.link').transition().remove(); root = d; update(root); })//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide);
 
