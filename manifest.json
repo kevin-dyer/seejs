@@ -8,11 +8,11 @@
     "default_title": "Build visualization"
   },
   "permissions": [
-    "activeTab"
-    // "background",
-    // "tabs",
-    // "http://*/*", 
-    // "https://*/*"
+    //"activeTab"
+    "background",
+    "tabs",
+    "http://*/*", 
+    "https://*/*"
   ],
   "background": {
     "scripts": ["bg.js"]
