@@ -162,6 +162,60 @@
             i,
             formattedList;
 
+        //TEST get request
+      //get all scripts
+      // var sourceCode = '',
+      //     scriptFiles = document.getElementsByTagName('script'),
+      //     filesLength = scriptFiles.length,
+      //     ele,
+      //     i,
+      //     r = 0,
+      //     requests = 0;
+
+      //     code = sourceCode; //switch the source
+
+      // for (i = 0; i < filesLength; i++) {
+      //   ele = scriptFiles[i];
+      //   if (ele.innerHTML) {
+      //     //console.log("innerHTML of script tag exists!, adding to sourceCode.");
+      //     sourceCode += ele.innerHTML;
+
+      //     //console.log("sourceCode so far: ", sourceCode);
+      //   }else if (ele.getAttribute('src')) {
+      //     console.log("making get request to src: ", ele.getAttribute('src'));
+      //     d3.text(ele.getAttribute('src'), function (error, data) {
+      //       //console.log("get request successful, adding to sourceCode.");
+      //       sourceCode += data;
+
+      //       batchResponse(function (sourceCode) {
+      //           tree = esprima.parse(sourceCode, { range: true, loc: true});
+      //           console.log("esprima tree: ", tree);
+
+      //           //init function tree
+      //           functionTree = getFunctionTree(tree, code);
+      //           functionTree = setFunctionTreeDependencies(functionTree);
+      //           functionTree = addHiddenChildren(functionTree);
+      //           console.log("functionTree!!!, ", functionTree);
+      //           // BUBBLE
+      //           functionTree = convertToChildren(functionTree);
+      //           makeBubbleChart(functionTree);
+      //       }, requests);
+      //       //console.log("sourceCode so far: ", sourceCode);
+      //     });
+      //     requests++;
+      //   }
+      // }
+
+      // function batchResponse (callback, requests) {
+      //   console.log("r = ", r, ", requests = ", requests);
+      //   if (r === requests - 1) {
+      //       console.log("calling callback!!");
+      //     callback(sourceCode);
+      //   }else {
+      //     r++;
+      //   }
+      // }
+
 
         tree = esprima.parse(code, { range: true, loc: true});
         console.log("esprima tree: ", tree);
@@ -172,10 +226,10 @@
         functionTree = addHiddenChildren(functionTree);
         console.log("functionTree!!!, ", functionTree);
 
-        // TREE
-        //makeTree(functionTree);
+        // // TREE
+        // //makeTree(functionTree);
 
-        // BUBBLE
+        // // BUBBLE
         functionTree = convertToChildren(functionTree);
         makeBubbleChart(functionTree);
 
@@ -446,9 +500,25 @@
         }
     }
 
+    function initFunctionTree (code) {
+        var tree,
+            functionTree;
+
+        tree = esprima.parse(code, { range: true, loc: true});
+        console.log("esprima tree: ", tree);
+
+        //init function tree
+        functionTree = getFunctionTree(tree, code);
+        functionTree = setFunctionTreeDependencies(functionTree);
+        functionTree = addHiddenChildren(functionTree);
+        functionTree = convertToChildren(functionTree);
+
+        return functionTree;
+    }
+
     exports.Tracer = {
-        init: init
-        //FunctionEntrance: traceFunctionEntrance
+        init: init,
+        functionTree: initFunctionTree
     };
 
 }(typeof exports === 'undefined' ? (esmorph = {}) : exports));

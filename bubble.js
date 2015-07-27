@@ -1,5 +1,5 @@
 function makeBubbleChart (root)  {
-  var w = 1280,
+  var w = 800,
       h = 800,
       r = 720,
       x = d3.scale.linear().range([0, r]),
@@ -87,6 +87,9 @@ function makeBubbleChart (root)  {
       .sort(null)
       .size([r, r])
       .value(function(d) { return d.size; });
+
+  //remove old one
+  d3.select("svg").remove();
 
   var vis = d3.select("body").insert("svg:svg", "h2")
       .attr("width", w)
@@ -282,4 +285,18 @@ function makeBubbleChart (root)  {
     node = d;
     d3.event.stopPropagation();
   }
+
+
+  
+
+  
+
+  // d3.text("tree.js", function (error, data) {
+  //   console.log("tree.js data!!, ", data);
+  // });
+
+
+
+
+
 }

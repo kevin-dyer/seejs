@@ -99,30 +99,40 @@
 
     global.traceRun = function () {
         var code, timestamp;
-            id('info').setAttribute('class', 'alert-box secondary');
-            id('info').innerHTML = 'Executing...';
-            window.editor.removeAllErrorMarkers();
+            // id('info').setAttribute('class', 'alert-box secondary');
+            // id('info').innerHTML = 'Executing...';
+            // window.editor.removeAllErrorMarkers();
 
             //createTraceCollector();
             code = traceInstrument();
             //eval(code)
     };
+
+    global.runEsmorph = function (sourceCode) {
+        //var code = window.esmorph.Tracer.init(sourceCode);
+        //console.log("code after runEsmorph: ", code);
+
+        var codeTree = window.esmorph.Tracer.functionTree(sourceCode);
+        //console.log("codeTree: ", codeTree);
+        return codeTree;
+    };
+
 }(window));
 
-window.onload = function () {
-    'use strict';
+// window.onload = function () {
+//     'use strict';
 
-    document.getElementById('run').onclick = window.traceRun;
+//     document.getElementById('run').onclick = window.traceRun;
 
-    try {
-        require(['custom/editor'], function (editor) {
-            window.editor = editor({ parent: 'editor', lang: 'js' });
-            window.editor.getModel().addEventListener("Changed", function () {
-                window.editor.removeAllErrorMarkers();
-                document.getElementById('info').setAttribute('class', 'alert-box secondary');
-                document.getElementById('info').innerHTML = 'Ready.';
-            });
-        });
-    } catch (e) {
-    }
-};
+//     try {
+//         require(['custom/editor'], function (editor) {
+//             window.editor = editor({ parent: 'editor', lang: 'js' });
+//             window.editor.getModel().addEventListener("Changed", function () {
+//                 window.editor.removeAllErrorMarkers();
+//                 document.getElementById('info').setAttribute('class', 'alert-box secondary');
+//                 document.getElementById('info').innerHTML = 'Ready.';
+//             });
+//         });
+//     } catch (e) {
+//     }
+// };
