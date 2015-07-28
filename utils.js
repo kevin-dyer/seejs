@@ -29,18 +29,21 @@
 
             //loader
             showLoader: function () {
-                var myWindow = chrome.extension.getViews({type: "popup"})[0];
-                debugger
+                var views = chrome.extension.getViews();
+                    myWindow = views[views.length - 1];
+                //var myWindow = chrome.extension.getViews()[0];
                 myWindow.document.getElementsByClassName('loading')[0].style.display = "block";
                 this.updateLoaderStatus();
             },
             hideLoader: function () {
-                var myWindow = chrome.extension.getViews({type: "popup"})[0];
+                var views = chrome.extension.getViews();
+                    myWindow = views[views.length - 1];
                 myWindow.document.getElementsByClassName('loading')[0].style.display = "none";
             },
             updateLoaderStatus: function (status) {
                 status = status || "Getting Source Code";
-                var myWindow = chrome.extension.getViews({type: "popup"})[0];
+                var views = chrome.extension.getViews();
+                    myWindow = views[views.length - 1];
                 myWindow.document.getElementsByClassName('loading-status')[0].innerHTML = status;
             }
         }

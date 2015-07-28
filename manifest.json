@@ -4,17 +4,34 @@
   "version": "1.0",
   "browser_action": {
     "default_icon": "blue-icon.png",
-    "default_popup": "popup.html",
+    //"default_popup": "popup.html",
     "default_title": "Build visualization"
   },
   "permissions": [
-    "background",
+    //"background",
     "tabs",
     "http://*/*", 
     "https://*/*"
   ],
+
   "background": {
-    "scripts": ["bg.js"]
+    "scripts": ["bg.js"
+      // "bower_components/d3/d3.min.js",
+      // "bower_components/d3-tip/index.js",
+      // "esprima.js",
+      // "utils.js",
+      // "esmorph.js",
+      // "functiontrace.js",
+      // "bubble.js"
+    ],
+    "persistent": false
+    //"page": "popup.html"
   },
+  // "content_scripts": [
+  //   {
+  //     "matches": ["http://*/*", "https://*/*"],
+  //     "js": ["content_script.js"]
+  //   }
+  // ],
   "manifest_version": 2
 }
