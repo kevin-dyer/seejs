@@ -26,20 +26,36 @@ function focusOrCreateTab(url) {
 
 chrome.browserAction.onClicked.addListener(function(tab) {
   var popup_url = chrome.extension.getURL("popup.html");
-      //content_script_url = chrome.extension.getURL("content_script.js");
 
       //console.log("content_script_url: ", content_script_url);
   focusOrCreateTab(popup_url);
-  console.log("fired!");
-  // chrome.tabs.create({'url': 'popup.html'}, function(tab) {
-  //   console.log("tab is created!");
-  // });
+
+
+  // var views = chrome.extension.getViews(),
+  //     myWindow = views[views.length - 1];
+
+  // //myWindow.document.getElementsByClassName('webpage-title')[0].innerHTML = window.origin || window.href;
+  // console.log("window html: ", window.origin || window.href);
+  // debugger;
 
   chrome.tabs.executeScript(tab.id, {
     file: 'content_script.js'
-    //file: content_script_url
   });
+
+
+  //THis way does not give me access
+
+
+  // document.addEventListener('DOMContentLoaded', function () {
+  //   console.log("before content_script injected");
+  //   chrome.tabs.executeScript(tab.id, {
+  //     file: 'content_script.js'
+  //   });
+  //   console.log("after content_script injected");
+  // });
 });
+
+  
 
 
 
@@ -54,6 +70,8 @@ chrome.runtime.onMessage.addListener(
     
     console.log("back end recieved source code: ", request);
     //myWindow.UTILS.showLoader();
+
+    myWindow.document.getElementsByClassName('webpage-title')[0].innerHTML = request.url;
     
     
     console.log("running esmorph on it");

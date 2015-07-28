@@ -1,5 +1,5 @@
 function makeBubbleChart (root)  {
-  var w = 800,
+  var w = 1280,
       h = 800,
       r = 720,
       x = d3.scale.linear().range([0, r]),
@@ -30,8 +30,7 @@ function makeBubbleChart (root)  {
 
   function getBorderColor (d, i, thisD, thisI) {
     //console.log("d, i, thisD, thisI: ", !!d, ', ', i, ', ', !!thisD, ', ', thisI)
-    //if (typeof thisI === 'number' && i === thisI) {
-    if (thisD && d === thisD) {
+    if (typeof thisI === 'number' && i === thisI) {
       //console.log("self border color: ", selfBorderColor);
       return selfBorderColor;
     } else if (thisD && thisD.dependencies.indexOf(d) >= 0) {
@@ -88,9 +87,6 @@ function makeBubbleChart (root)  {
       .size([r, r])
       .value(function(d) { return d.size; });
 
-  //remove old one
-  d3.select("svg").remove();
-
   var vis = d3.select("body").insert("svg:svg", "h2")
       .attr("width", w)
       .attr("height", h)
@@ -116,11 +112,8 @@ function makeBubbleChart (root)  {
 
     nodes = pack.nodes(rootNode);
 
-
     circles = vis.selectAll("circle")
-        .data(nodes, function (d) {
-          return UTILS.getId(d);
-        });
+        .data(nodes);
 
     circles
       .attr("class", getClass)
@@ -156,19 +149,15 @@ function makeBubbleChart (root)  {
         return getOpacity(d);
       })
       .on("click", function(d, i) { toggleDependencies(d, i); d3.event.stopPropagation();})
-      .on("dblclick", function (d) {vis.selectAll('.link').transition().remove(); root = d; update(root); })//zoom(node == d ? root : d);d3.event.stopPropagation();})
+      .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide);
 
     circles.exit()
       .remove();
 
-    circles.order();
-
     labels = vis.selectAll("text")
-        .data(nodes, function (d) {
-          return UTILS.getId(d);
-        });
+        .data(nodes);
 
     labels.attr("class", getClass)
       .attr("x", function(d) { return d.x; })
@@ -240,12 +229,12 @@ function makeBubbleChart (root)  {
         return d3.min([d.source.r * 2, d.target.r * 2, 25]);
       })
       .style("stroke-linecap", "round")
-      .attr("opacity", 0.60)
+      .attr("opacity", 0.40)
       .attr("d", d3.svg.diagonal());
 
-    paths.each(function(d) { d.totalLength = this.getTotalLength();})
-       .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
-       .attr("stroke-dashoffset", function(d) { return d.totalLength; })
+    paths.each(function(d) { d.totalLength = this.getTotalLength(); })
+      .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
+      .attr("stroke-dashoffset", function(d) { return d.totalLength; })
       .transition()
         .duration(1000)
         .attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })
@@ -285,18 +274,4 @@ function makeBubbleChart (root)  {
     node = d;
     d3.event.stopPropagation();
   }
-
-
-  
-
-  
-
-  // d3.text("tree.js", function (error, data) {
-  //   console.log("tree.js data!!, ", data);
-  // });
-
-
-
-
-
 }
