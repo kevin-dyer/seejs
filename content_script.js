@@ -30,7 +30,7 @@
 
                 //window.postMessage({ type: "SOURCE_CODE", text: sourceCode }, "*");
                 console.log("posting message");
-                chrome.runtime.sendMessage({url: window.location.origin, sourceCode: sourceCode}, function(response) {
+                chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode}, function(response) {
                   console.log("we have a response!: ", response);
                 });
                 //chrome.runtime.connect().postMessage({"sourceCode": sourceCode});
