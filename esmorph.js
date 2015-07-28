@@ -503,14 +503,20 @@
     function initFunctionTree (code) {
         var tree,
             functionTree;
+            //myWindow = chrome.extension.getViews({type: "popup"})[0];
 
+        UTILS.updateLoaderStatus("Getting Esprima Tree");
         tree = esprima.parse(code, { range: true, loc: true});
         console.log("esprima tree: ", tree);
 
         //init function tree
+        UTILS.updateLoaderStatus("Creating Function Tree");
         functionTree = getFunctionTree(tree, code);
+        UTILS.updateLoaderStatus("Setting Dependencies");
         functionTree = setFunctionTreeDependencies(functionTree);
+        UTILS.updateLoaderStatus("Adding Hidden Children");
         functionTree = addHiddenChildren(functionTree);
+        UTILS.updateLoaderStatus("Converting to Children");
         functionTree = convertToChildren(functionTree);
 
         return functionTree;

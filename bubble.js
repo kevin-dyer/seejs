@@ -243,9 +243,9 @@ function makeBubbleChart (root)  {
       .attr("opacity", 0.60)
       .attr("d", d3.svg.diagonal());
 
-    paths.each(function(d) { d.totalLength = this.getTotalLength(); })
-      .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
-      .attr("stroke-dashoffset", function(d) { return d.totalLength; })
+    paths.each(function(d) { d.totalLength = this.getTotalLength();})
+       .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
+       .attr("stroke-dashoffset", function(d) { return d.totalLength; })
       .transition()
         .duration(1000)
         .attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })

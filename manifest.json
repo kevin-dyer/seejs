@@ -8,7 +8,6 @@
     "default_title": "Build visualization"
   },
   "permissions": [
-    //"activeTab"
     "background",
     "tabs",
     "http://*/*", 
@@ -17,39 +16,5 @@
   "background": {
     "scripts": ["bg.js"]
   },
-  // "background": {
-  //   "scripts": [
-  //     "background.js",
-  //     "bower_components/d3/d3.min.js",
-  //     "bower_components/d3-tip/index.js",
-  //     "utils.js",
-  //     "esprima.js",
-  //     "esmorph.js",
-  //     "functiontrace.js",
-  //     "bubble.js"
-  //   ]
-  // },
-  // "background": {
-  //   "scripts": [
-  //     "background.js",
-  //     "bower_components/d3/d3.min.js",
-  //     "bower_components/d3-tip/index.js",
-  //     "utils.js",
-  //     "esprima.js",
-  //     "esmorph.js",
-  //     "functiontrace.js",
-  //     "bubble.js"
-  //   ],
-    //"page": "popup.html",
-    //"persistent": false
-  //},
   "manifest_version": 2
-
-  // "content_scripts": [
-  //   {
-  //     "matches": ["*.*"],
-  //     "css": ["mystyles.css"],
-  //     "js": ["jquery.js", "myscript.js"]
-  //   }
-  // ],
 }

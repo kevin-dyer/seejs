@@ -25,6 +25,23 @@
             //D3
             distance: function (source, target) {
                 return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2));
+            },
+
+            //loader
+            showLoader: function () {
+                var myWindow = chrome.extension.getViews({type: "popup"})[0];
+                debugger
+                myWindow.document.getElementsByClassName('loading')[0].style.display = "block";
+                this.updateLoaderStatus();
+            },
+            hideLoader: function () {
+                var myWindow = chrome.extension.getViews({type: "popup"})[0];
+                myWindow.document.getElementsByClassName('loading')[0].style.display = "none";
+            },
+            updateLoaderStatus: function (status) {
+                status = status || "Getting Source Code";
+                var myWindow = chrome.extension.getViews({type: "popup"})[0];
+                myWindow.document.getElementsByClassName('loading-status')[0].innerHTML = status;
             }
         }
     exports.UTILS = utils;

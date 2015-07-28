@@ -24,7 +24,8 @@ circle.parent:hover {
   stroke-width: .5px;*/
 }
 
-circle.child {
-  /*pointer-events: none;*/
+.link {
+  pointer-events:none;
 }
+
 
