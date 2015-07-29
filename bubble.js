@@ -57,6 +57,8 @@ function makeBubbleChart (root)  {
       return anonymousFillColor;
     } else if (d.name === 'root') {
       return defaultFillColor;
+    } else if (d.type === 'file') {
+      return '#000';
     } else if (d.dependencies.length === 0) {
       return noDepFillColor;
     } else if (!d.children || d.children.length === 0) {
@@ -123,7 +125,13 @@ function makeBubbleChart (root)  {
       .style("fill", function (d, i) {
         return getFillColor(d, i);
       })
-      .style("stroke-width", 1.5)
+      .style("stroke-width", function (d) {
+        if (d.type === 'file') {
+          return 8;
+        } else {
+          return 1.5;
+        }
+      })
       .style("opacity", function(d) {
         return getOpacity(d);
       })

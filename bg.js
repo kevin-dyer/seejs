@@ -19,40 +19,15 @@ function focusOrCreateTab(url) {
   });
 }
 
-// chrome.browserAction.onClicked.addListener(function(tab) {
-//   var manager_url = chrome.extension.getURL("manager.html");
-//   focusOrCreateTab(manager_url);
-// });
-
 chrome.browserAction.onClicked.addListener(function(tab) {
   var popup_url = chrome.extension.getURL("popup.html");
 
       //console.log("content_script_url: ", content_script_url);
   focusOrCreateTab(popup_url);
 
-
-  // var views = chrome.extension.getViews(),
-  //     myWindow = views[views.length - 1];
-
-  // //myWindow.document.getElementsByClassName('webpage-title')[0].innerHTML = window.origin || window.href;
-  // console.log("window html: ", window.origin || window.href);
-  // debugger;
-
   chrome.tabs.executeScript(tab.id, {
     file: 'content_script.js'
   });
-
-
-  //THis way does not give me access
-
-
-  // document.addEventListener('DOMContentLoaded', function () {
-  //   console.log("before content_script injected");
-  //   chrome.tabs.executeScript(tab.id, {
-  //     file: 'content_script.js'
-  //   });
-  //   console.log("after content_script injected");
-  // });
 });
 
   
@@ -63,27 +38,36 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     var codeTree,
         views = chrome.extension.getViews(),
-        myWindow = views[views.length - 1];
-        //myWindow = views[1];
-
-        console.log("views: ", views);
+        myWindow = views[views.length - 1],
+        i,
+        sourceLength = request.sourceCode.length,
+        fileNode;
     
     console.log("back end recieved source code: ", request);
-    //myWindow.UTILS.showLoader();
 
     myWindow.document.getElementsByClassName('webpage-title')[0].innerHTML = request.url;
     
     
     console.log("running esmorph on it");
+    myWindow.UTILS.updateLoaderStatus("Creating FunctionTree...");
 
     //var extensionId = chrome.runtime.id;
+    codeTree = {name: "root", children: [], dependencies: [], parent: null, type: "root"};
     
-    codeTree = myWindow.runEsmorph(request.sourceCode);
+    //TODO: run bubble update func as each src is processed
+    for (i = 0; i < sourceLength; i++) {
+      console.log(i + ". Adding " + request.sourceCode[i].name);
+      myWindow.UTILS.updateLoaderStatus("Adding " + request.sourceCode[i].name);
+      fileNode = myWindow.runEsmorph(request.sourceCode[i]);
+      fileNode.parent = codeTree;
+      codeTree.children.push(fileNode);
+    }
+    // codeTree = myWindow.runEsmorph(request.sourceCode);
     console.log("codeTree in background: ", codeTree);
 
-    console.log("making bubble chart");
+    //console.log("making bubble chart");
     myWindow.UTILS.updateLoaderStatus("Making Bubble Chart");
-    
+
     myWindow.makeBubbleChart(codeTree);
 
     myWindow.UTILS.hideLoader();
@@ -92,6 +76,6 @@ chrome.runtime.onMessage.addListener(
 // chrome.tabs.create({url: chrome.extension.getURL('popup.html')});
 
     if (request){
-      sendResponse({farewell: "goodbye"});
+      sendResponse({status: 200});
     }
   });

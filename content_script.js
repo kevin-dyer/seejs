@@ -2,65 +2,46 @@
   console.log("This is the injected code!!!");
 
         //get all scripts
-      var sourceCode = '',
+      var sourceCode = [],
           scriptFiles = document.getElementsByTagName('script'),
           filesLength = scriptFiles.length,
-          ele,
+          // ele,
+          // eleSrc,
+          // eleHTML,
           i,
           r = 0,
           requests = 0;
 
-          code = sourceCode; //switch the source
+          //code = sourceCode; //switch the source
 
       for (i = 0; i < filesLength; i++) {
-        ele = scriptFiles[i];
-        if (ele.innerHTML) {
-          //console.log("innerHTML of script tag exists!, adding to sourceCode.");
-          sourceCode += ele.innerHTML;
+        var ele = scriptFiles[i],
+            eleSrc = ele.getAttribute('src'),
+            eleHTML = ele.innerHTML;
 
-          //console.log("sourceCode so far: ", sourceCode);
-        }else if (ele.getAttribute('src')) {
-          //console.log("making get request to src: ", ele.getAttribute('src'));
-          loadXMLDoc(ele.getAttribute('src'), function (data) {
-            //console.log("get request successful, adding to sourceCode.");
-            sourceCode += data;
-
-            batchResponse(function (sourceCode) {
-                console.log("scrip src = ", sourceCode.length);
-
-                //window.postMessage({ type: "SOURCE_CODE", text: sourceCode }, "*");
-                console.log("posting message");
-                chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode}, function(response) {
-                  console.log("we have a response!: ", response);
-                });
-                //chrome.runtime.connect().postMessage({"sourceCode": sourceCode});
-                
-                // tree = esprima.parse(sourceCode, { range: true, loc: true});
-                // console.log("esprima tree: ", tree);
-
-                // //init function tree
-                // functionTree = getFunctionTree(tree, code);
-                // functionTree = setFunctionTreeDependencies(functionTree);
-                // functionTree = addHiddenChildren(functionTree);
-                // console.log("functionTree!!!, ", functionTree);
-                // // BUBBLE
-                // functionTree = convertToChildren(functionTree);
-                // makeBubbleChart(functionTree);
-            }, requests);
-            //console.log("sourceCode so far: ", sourceCode);
+        if (eleHTML) {
+          sourceCode.push({name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
+        }else if (eleSrc) {
+          loadXMLDoc(eleSrc, function (responseCode, url) {
+            sourceCode.push({name: url, size: responseCode.length, type: "file", code: responseCode});
+            batchResponse(sourceCode, sendMessage, requests);
           });
           requests++;
         }
       }
 
-      function batchResponse (callback, requests) {
-        //console.log("r = ", r, ", requests = ", requests);
+      function batchResponse (sourceCode, callback, requests) {
         if (r === requests - 1) {
-            //console.log("calling callback!!");
           callback(sourceCode);
         }else {
           r++;
         }
+      }
+
+      function sendMessage (sourceCode) {
+        chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode}, function(response) {
+          console.log("Background response: ", response);
+        });
       }
 
   function loadXMLDoc(url, success, failure) {
@@ -79,7 +60,7 @@
            if(xmlhttp.status == 200){
                //document.getElementById("myDiv").innerHTML = xmlhttp.responseText;
               if (typeof success === 'function') {
-                success(xmlhttp.responseText);
+                success(xmlhttp.responseText, url);
               }
            }
            else if(xmlhttp.status == 400) {

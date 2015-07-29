@@ -162,60 +162,7 @@
             i,
             formattedList;
 
-        //TEST get request
-      //get all scripts
-      // var sourceCode = '',
-      //     scriptFiles = document.getElementsByTagName('script'),
-      //     filesLength = scriptFiles.length,
-      //     ele,
-      //     i,
-      //     r = 0,
-      //     requests = 0;
-
-      //     code = sourceCode; //switch the source
-
-      // for (i = 0; i < filesLength; i++) {
-      //   ele = scriptFiles[i];
-      //   if (ele.innerHTML) {
-      //     //console.log("innerHTML of script tag exists!, adding to sourceCode.");
-      //     sourceCode += ele.innerHTML;
-
-      //     //console.log("sourceCode so far: ", sourceCode);
-      //   }else if (ele.getAttribute('src')) {
-      //     console.log("making get request to src: ", ele.getAttribute('src'));
-      //     d3.text(ele.getAttribute('src'), function (error, data) {
-      //       //console.log("get request successful, adding to sourceCode.");
-      //       sourceCode += data;
-
-      //       batchResponse(function (sourceCode) {
-      //           tree = esprima.parse(sourceCode, { range: true, loc: true});
-      //           console.log("esprima tree: ", tree);
-
-      //           //init function tree
-      //           functionTree = getFunctionTree(tree, code);
-      //           functionTree = setFunctionTreeDependencies(functionTree);
-      //           functionTree = addHiddenChildren(functionTree);
-      //           console.log("functionTree!!!, ", functionTree);
-      //           // BUBBLE
-      //           functionTree = convertToChildren(functionTree);
-      //           makeBubbleChart(functionTree);
-      //       }, requests);
-      //       //console.log("sourceCode so far: ", sourceCode);
-      //     });
-      //     requests++;
-      //   }
-      // }
-
-      // function batchResponse (callback, requests) {
-      //   console.log("r = ", r, ", requests = ", requests);
-      //   if (r === requests - 1) {
-      //       console.log("calling callback!!");
-      //     callback(sourceCode);
-      //   }else {
-      //     r++;
-      //   }
-      // }
-
+  
 
         tree = esprima.parse(code, { range: true, loc: true});
         console.log("esprima tree: ", tree);
@@ -375,12 +322,15 @@
     // }
 
     //create tree of scoped functions
-    function getFunctionTree (node, code) {
+    function getFunctionTree (node, code, sourceCode) {
+        console.log("sourceCode in getFunctionTree: ", sourceCode);
+        debugger;
         var functionTree = {
-                name: 'root',
+                name: sourceCode.name || 'noName',
                 parent: null,
                 myChildren: [],
-                treeNode: node
+                treeNode: node,
+                type: sourceCode.type
             };
         createFunctionTree(node, code, functionTree);
 
@@ -500,18 +450,20 @@
         }
     }
 
-    function initFunctionTree (code) {
+    function initFunctionTree (sourceCode) {
         var tree,
-            functionTree;
+            functionTree,
+            code = sourceCode.code;
             //myWindow = chrome.extension.getViews({type: "popup"})[0];
+
 
         UTILS.updateLoaderStatus("Getting Esprima Tree");
         tree = esprima.parse(code, { range: true, loc: true});
-        console.log("esprima tree: ", tree);
+        //console.log("esprima tree: ", tree);
 
         //init function tree
         UTILS.updateLoaderStatus("Creating Function Tree");
-        functionTree = getFunctionTree(tree, code);
+        functionTree = getFunctionTree(tree, code, sourceCode);
         UTILS.updateLoaderStatus("Setting Dependencies");
         functionTree = setFunctionTreeDependencies(functionTree);
         UTILS.updateLoaderStatus("Adding Hidden Children");
