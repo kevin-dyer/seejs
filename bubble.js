@@ -1,6 +1,6 @@
-function makeBubbleChart (root)  {
-  var w = 1280,
-      h = 800,
+function makeBubbleChart (root, sourceCode)  {
+  var w = 720,
+      h = 750,
       r = 720,
       x = d3.scale.linear().range([0, r]),
       y = d3.scale.linear().range([0, r]),
@@ -40,7 +40,9 @@ function makeBubbleChart (root)  {
       //console.log("anonymousBorderColor: ", anonymousBorderColor);
       return anonymousBorderColor;
     } else if (d.name  === 'root') {
-      return anonymousBorderColor;
+      return backgroundColor;
+    } else if (d.type === 'file' || d.type === 'inlineScript') {
+      return noDepBorderColor;
     } else if (d.dependencies.length === 0) {
       //console.log("noDepBorderColor: ", noDepBorderColor);
       return noDepBorderColor;
@@ -56,9 +58,9 @@ function makeBubbleChart (root)  {
     } else if (d.name === '[Anonymous]') {
       return anonymousFillColor;
     } else if (d.name === 'root') {
-      return defaultFillColor;
-    } else if (d.type === 'file') {
-      return '#000';
+      return backgroundColor;
+    } else if (d.type === 'file' || d.type === 'inlineScript') {
+      return backgroundColor; //not sure on this one
     } else if (d.dependencies.length === 0) {
       return noDepFillColor;
     } else if (!d.children || d.children.length === 0) {
@@ -69,14 +71,28 @@ function makeBubbleChart (root)  {
   }
 
   function getOpacity(d, thisD) {
-    if (d.type === 'hidden') {
+    if (d.type === 'hidden' || d.name === 'root') {
       return 1e-6;
+    } else if (d.type=== 'file' || d.type === 'inlineScript') {
+      return 1;
     } else if (d.name === '[Anonymous]' || !d.dependencies.length || (thisD && thisD.dependencies.indexOf(d) >= 0)) {
       return 1;
     } else if (!d.children || !d.children.length) {
       return 1;
     } else {
       return 0.4;
+    }
+  }
+
+  function getBorderWidth(d, i, thisI) {
+    //console.log("getting border width, d.type: ", d.type);
+    if (d.type === 'file' || d.type === 'inlineScript') {
+      console.log("I found a file, setting borderWidth to 12!!!!!");
+      return 5;
+    } else if (typeof i === 'number' && typeof thisI === 'number' && i === thisI) {
+      return 4;
+    } else {
+      return 1.5;
     }
   }
 
@@ -87,13 +103,14 @@ function makeBubbleChart (root)  {
   var pack = d3.layout.pack()
       .sort(null)
       .size([r, r])
+      .padding(1)
       .value(function(d) { return d.size; });
 
   var vis = d3.select("body").insert("svg:svg", "h2")
       .attr("width", w)
       .attr("height", h)
+      .attr("class", "bubble-chart")
     .append("svg:g")
-      .style("fill", backgroundColor)
       .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
 
   //INIT TOOLTIP
@@ -125,12 +142,10 @@ function makeBubbleChart (root)  {
       .style("fill", function (d, i) {
         return getFillColor(d, i);
       })
-      .style("stroke-width", function (d) {
-        if (d.type === 'file') {
-          return 8;
-        } else {
-          return 1.5;
-        }
+      .style("stroke-width", function(d) {
+        var bw = getBorderWidth(d);
+        console.log("stroke-width: ", bw);
+        return bw;
       })
       .style("opacity", function(d) {
         return getOpacity(d);
@@ -152,7 +167,12 @@ function makeBubbleChart (root)  {
       .style("fill", function (d,i) {
         return getFillColor(d,i);
       })
-      .style("stroke-width", 1.5)
+      .style("stroke-width", function (d) {
+        var bw = getBorderWidth(d);
+        
+        console.log("stroke-width: ", bw);
+        return bw;
+      })
       .style("opacity", function(d) {
         return getOpacity(d);
       })
@@ -203,13 +223,8 @@ function makeBubbleChart (root)  {
       .style("fill", function (d,i) {
         return getFillColor(d,i,thisD,thisI);
       })
-      .style("stroke-width", function (d, i) {
-        if (typeof thisI === 'number' && i === thisI) {
-          //console.log("self border color: ", selfBorderColor);
-          return 3;
-        } else {
-          return 1.5;
-        }
+      .style("stroke-width", function (d, i){
+        return getBorderWidth(d, i, thisI);
       })
       .style("opacity", function(d) {
         return getOpacity(d, thisD);
@@ -249,6 +264,32 @@ function makeBubbleChart (root)  {
         .remove();
 
     paths.exit().remove();
+
+    //display in code editor
+    if (d.treeNode) {
+      var parent = d,
+          editor = ace.edit("editor");
+          range = d.treeNode.range;
+
+      while (parent) {
+        if (parent.type === 'file' || parent.type === 'inlineScript') {
+          fileName = parent.name;
+          break;
+        }
+        parent = parent.parent;
+      }
+
+
+      console.log("adding function to editor! parent: ", parent.name);
+      console.log("sourceCode typeof: ", typeof parent.sourceCode);
+      if (d.type === 'file' || d.type === 'innerHTML') {
+        editor.setValue(parent.sourceCode);
+      } else {
+        editor.setValue(parent.sourceCode.slice(range[0], range[1]));
+      }
+      editor.navigateFileStart();
+    }
+    
   }
     
 

@@ -68,7 +68,7 @@ chrome.runtime.onMessage.addListener(
     //console.log("making bubble chart");
     myWindow.UTILS.updateLoaderStatus("Making Bubble Chart");
 
-    myWindow.makeBubbleChart(codeTree);
+    myWindow.makeBubbleChart(codeTree, request.sourceCode.map(function(c) {return c.code}).join(''));
 
     myWindow.UTILS.hideLoader();
 

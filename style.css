@@ -59,3 +59,19 @@ div#info {
     margin: -1px;
     border-radius: 4px;
 }
+
+
+
+/*new code editor*/
+#editor {
+    margin: 0;
+    position: relative;
+    display:inline-block;
+    width: 600px;
+    height: 750px;
+    float:right;
+    /*top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;*/
+}

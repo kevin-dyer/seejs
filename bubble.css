@@ -28,4 +28,9 @@ circle.parent:hover {
   pointer-events:none;
 }
 
+svg.bubble-chart {
+  display: inline-block;
+  float:left;
+}
+
 

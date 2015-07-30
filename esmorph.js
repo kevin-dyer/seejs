@@ -178,7 +178,7 @@
 
         // // BUBBLE
         functionTree = convertToChildren(functionTree);
-        makeBubbleChart(functionTree);
+        makeBubbleChart(functionTree, code);
 
         // SANKEY
         //var sankeyData = getSankeyData(functionTree);
@@ -324,13 +324,13 @@
     //create tree of scoped functions
     function getFunctionTree (node, code, sourceCode) {
         console.log("sourceCode in getFunctionTree: ", sourceCode);
-        debugger;
         var functionTree = {
                 name: sourceCode.name || 'noName',
                 parent: null,
                 myChildren: [],
                 treeNode: node,
-                type: sourceCode.type
+                type: sourceCode.type,
+                sourceCode: sourceCode.code
             };
         createFunctionTree(node, code, functionTree);
 
@@ -427,7 +427,11 @@
 
     function addHiddenChildren (functionTree) {
         traverseFunctionTree(functionTree, function(node, path) {
-            if (node && node.myChildren && node.myChildren.length === 1) {
+            if (node && node.myChildren && 
+                node.myChildren.length === 1 && 
+                (node.type !== 'file' || node.type !== 'inlineScript') &&
+                node.myChildren[0].name !== '[Anonymous]'
+            ) {
                 node.myChildren.push({
                     name: '',
                     parent: node,
