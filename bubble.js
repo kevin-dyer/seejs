@@ -85,9 +85,7 @@ function makeBubbleChart (root, sourceCode)  {
   }
 
   function getBorderWidth(d, i, thisI) {
-    //console.log("getting border width, d.type: ", d.type);
     if (d.type === 'file' || d.type === 'inlineScript') {
-      console.log("I found a file, setting borderWidth to 12!!!!!");
       return 5;
     } else if (typeof i === 'number' && typeof thisI === 'number' && i === thisI) {
       return 4;
@@ -132,7 +130,9 @@ function makeBubbleChart (root, sourceCode)  {
     nodes = pack.nodes(rootNode);
 
     circles = vis.selectAll("circle")
-        .data(nodes);
+        .data(nodes, function (d) {
+          return UTILS.getId(d);
+        });
 
     circles
       .attr("class", getClass)
@@ -178,11 +178,17 @@ function makeBubbleChart (root, sourceCode)  {
       })
       .on("click", function(d, i) { toggleDependencies(d, i); d3.event.stopPropagation();})
       .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
-      .on('mouseover', tip.show)
+      .on('mouseover', function(d) {
+        if (d.name !== 'root' && d.type !== 'hidden') {
+          tip.show(d);
+        }
+      })
       .on('mouseout', tip.hide);
 
     circles.exit()
       .remove();
+
+    circles.order();
 
     labels = vis.selectAll("text")
         .data(nodes);
@@ -256,11 +262,11 @@ function makeBubbleChart (root, sourceCode)  {
       .attr("d", d3.svg.diagonal());
 
     paths.each(function(d) { d.totalLength = this.getTotalLength(); })
-      .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
-      .attr("stroke-dashoffset", function(d) { return d.totalLength; })
+      //.attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
+      //.attr("stroke-dashoffset", function(d) { return d.totalLength; })
       .transition()
         .duration(1000)
-        .attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })
+        //.attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })
         .remove();
 
     paths.exit().remove();

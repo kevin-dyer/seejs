@@ -72,6 +72,8 @@ chrome.runtime.onMessage.addListener(
 
     myWindow.UTILS.hideLoader();
 
+    myWindow.document.getElementById('editor').style.display = "inline-block";
+
 // console.log("show popup.html (background page)");
 // chrome.tabs.create({url: chrome.extension.getURL('popup.html')});
 

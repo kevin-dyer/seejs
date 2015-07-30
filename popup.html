@@ -41,6 +41,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="bubble.css">
+    <link rel="stylesheet" href="tool-tip.css">
 
     <script src="bower_components/d3/d3.min.js"></script>
     <script src="bower_components/d3-tip/index.js"></script>
@@ -58,12 +59,7 @@
     <div class="loading-status">Hold Up, its loading</div>
   </div>
 
-  <pre id="editor">function foo(items) {
-      var i;
-      for (i = 0; i &lt; items.length; i++) {
-          alert("Ace Rocks " + items[i]);
-      }
-  }</pre>
+  <pre id="editor">var instructions = "Click on a function to see its source code.";</pre>
   
 
   <script src="ace-builds/src/ace.js" type="text/javascript" charset="utf-8"></script>
