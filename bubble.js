@@ -349,19 +349,21 @@ function makeBubbleChart (root, sourceCode)  {
     paths.enter().append("svg:path")
       .attr("class", "link")
       .style("stroke", pathColor)
+      .style("fill", pathColor)
       .style("stroke-width", function (d) {
         return d3.min([d.source.r * 2, d.target.r * 2, 25]);
       })
       .style("stroke-linecap", "round")
-      .attr("opacity", 0.40)
-      .attr("d", d3.svg.diagonal());
+      .attr("opacity", 1)
+      //.attr("d", d3.svg.diagonal());
+      .attr("d", lineData);
 
     paths.each(function(d) { d.totalLength = this.getTotalLength(); d.highlight = true;})
-      //.attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
-      //.attr("stroke-dashoffset", function(d) { return d.totalLength; })
+      .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
+      .attr("stroke-dashoffset", function(d) { return d.totalLength; })
       .transition()
         .duration(1000)
-        //.attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })
+        .attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })
         .remove();
 
     paths.exit().transition().remove();
@@ -427,6 +429,18 @@ function makeBubbleChart (root, sourceCode)  {
       }
       editor.navigateFileStart();
     }
+  }
+
+  function lineData(d){
+    var line = d3.svg.line()
+          .x( function(point) { return point.lx; })
+          .y( function(point) { return point.ly; }),
+        points = [
+          {lx: d.source.x, ly: d.source.y},
+          {lx: d.target.x, ly: d.target.y}
+        ];
+        
+    return line(points);
   }
     
 
