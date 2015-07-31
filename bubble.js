@@ -314,18 +314,22 @@ function makeBubbleChart (root, sourceCode)  {
         thisD = d,
         thisI = i;
 
-    circles.style("stroke", function(d,i) {
-      return getBorderColor(d,i,thisD,thisI);
-    })
-      .style("fill", function (d,i) {
-        return getFillColor(d,i,thisD,thisI);
-      })
-      .style("stroke-width", function (d, i){
-        return getBorderWidth(d, i, thisI);
-      })
-      .style("opacity", function(d) {
-        return getOpacity(d, thisD);
-      })
+    circles
+      .transition()
+        .delay(500)
+        .duration(500)
+        .style("stroke", function(d,i) {
+          return getBorderColor(d,i,thisD,thisI);
+        })
+        .style("fill", function (d,i) {
+          return getFillColor(d,i,thisD,thisI);
+        })
+        .style("stroke-width", function (d, i){
+          return getBorderWidth(d, i, thisI);
+        })
+        .style("opacity", function(d) {
+          return getOpacity(d, thisD);
+        })
   }
 
   function showDependencyPaths (d) {
