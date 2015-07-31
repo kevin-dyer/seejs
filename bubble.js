@@ -30,9 +30,10 @@ function makeBubbleChart (root, sourceCode)  {
       pathColor = "#FFFFFF";
 
   function getBorderColor (d, i, thisD, thisI) {
-    if (typeof thisI === 'number' && i === thisI) {
-      return selfBorderColor;
-    } else if (thisD && thisD.dependencies.indexOf(d) >= 0) {
+    // if (typeof thisI === 'number' && i === thisI) {
+    //   return selfBorderColor;
+    // } else 
+    if (thisD && thisD.dependencies.indexOf(d) >= 0) {
       return depBorderColor;
     } else if (d.name === '[Anonymous]') {
       return anonymousBorderColor;
@@ -86,8 +87,8 @@ function makeBubbleChart (root, sourceCode)  {
   function getBorderWidth(d, i, thisI) {
     if (d.type === 'file' || d.type === 'inlineScript') {
       return 5;
-    } else if (typeof i === 'number' && typeof thisI === 'number' && i === thisI) {
-      return 4;
+    // } else if (typeof i === 'number' && typeof thisI === 'number' && i === thisI) {
+    //   return 4;
     } else if (d.name === '[Anonymous]') {
       return 0.5;
     } else {
@@ -154,10 +155,10 @@ function makeBubbleChart (root, sourceCode)  {
     var circles;
 
     circles = vis.selectAll("circle")
-        // .data(nodes, function (d) {
-        //   return d.uniqueId;
-        // });
-      .data(nodes);
+        .data(nodes, function (d) {
+          return d.uniqueId;
+        });
+      //.data(nodes);
 
     circles
       .attr("class", getClass)
@@ -180,24 +181,40 @@ function makeBubbleChart (root, sourceCode)  {
       .style("fill", getFillColor)
       .style("stroke-width", getBorderWidth)
       .style("opacity", getOpacity)
-      .on("click", function(d, i) { toggleDependencies(d, i); d3.event.stopPropagation();})
+      .on("click", onCircleClick)
       .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', function(d) {
         if (d.name !== 'root' && d.type !== 'hidden') {
           tip.show(d);
         }
-
-        d3.select(this).style("stroke", "black");
+        //TODO: messing up red selected circle
+        //d3.select(this).style("stroke", "black");
       })
       .on('mouseout', function (d) {
-        tip.hide;
-        d3.select(this).style("stroke", getBorderColor);
+        tip.hide();
+        //d3.select(this).style("stroke", getBorderColor);
       });
 
     circles.exit()
       .remove();
 
     circles.order();
+  }
+
+  function onCircleClick (d, i) {
+    toggleDependencies(d, i);
+
+    //clean up old selection:
+    d3.select(".selected").style("stroke", getBorderColor)
+      .style("stroke-width", getBorderWidth)
+      .classed("selected", false);
+
+    //highlight new selection (clicked circle)
+    d3.select(this).style("stroke", selfBorderColor)
+      .style("stroke-width", 4)
+      .classed("selected", true);
+
+    d3.event.stopPropagation();
   }
 
   function updateLabels (nodes) {
@@ -414,7 +431,7 @@ function makeBubbleChart (root, sourceCode)  {
     
 
   d3.select('.bubble-chart').on("click", function() {
-    var editor = ace.edit("editor");
+    var editor = ace.edit("editor")
 
     while(root.parent){
       root = root.parent;
