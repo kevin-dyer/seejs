@@ -1,23 +1,31 @@
 (function(exports) {
     var utils = {
             getId: function (functionObject) {
-                var range = functionObject.range;
+                var range,
+                    randomIndex = (Math.floor(Math.random()*90000) + 10000).toString();
+
+                if (!functionObject) {
+                    return randomIndex;
+                }
+
+                range = functionObject.range;
 
                 if (range) {
                     return range[0].toString() + "-" + range[1].toString();
-                } else {
+                } else if (functionObject.name) {
                     return functionObject.name;
+                } else {
+                    return randomIndex;
                 }
-                
             },
             getBaseName: function (functionObject) {
                 var name = functionObject.name,
-                namePath;
+                namePath,
+                splitRegx = /\.|\//;
 
                 if (functionObject && name){
-                    namePath = name.split('.');
-                    //console.log("name: ", name, ", baseName: ", namePath[namePath.length - 1]);
-                    
+                    namePath = name.split(splitRegx);
+
                     return namePath[namePath.length - 1];
                 }
             },

@@ -323,7 +323,7 @@
 
     //create tree of scoped functions
     function getFunctionTree (node, code, sourceCode) {
-        console.log("sourceCode in getFunctionTree: ", sourceCode);
+        //console.log("sourceCode in getFunctionTree: ", sourceCode);
         var functionTree = {
                 name: sourceCode.name || 'noName',
                 parent: null,
@@ -445,6 +445,13 @@
         return functionTree;
     }
 
+    function setUniqueIds (functionTree) {
+        traverseFunctionTree(functionTree, function(node, path) {
+            node.uniqueId = UTILS.getId(node.treeNode);
+        });
+        return functionTree;
+    }
+
     function functionExists (name, functionList) {
         var index = functionList.map(function (node) {return node.name}).indexOf(name);
         if (index === -1 ) {
@@ -472,8 +479,14 @@
         functionTree = setFunctionTreeDependencies(functionTree);
         UTILS.updateLoaderStatus("Adding Hidden Children");
         functionTree = addHiddenChildren(functionTree);
+
+        //set unqiue ID
+        functionTree = setUniqueIds(functionTree);
+
         UTILS.updateLoaderStatus("Converting to Children");
         functionTree = convertToChildren(functionTree);
+
+        
 
         return functionTree;
     }
