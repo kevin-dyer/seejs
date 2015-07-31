@@ -358,7 +358,7 @@ function makeBubbleChart (root, sourceCode)  {
         return d3.min([d.source.r * 2, d.target.r * 2, 25]);
       })
       .style("stroke-linecap", "round")
-      .attr("opacity", 1)
+      .attr("opacity", 0.9)
       //.attr("d", d3.svg.diagonal());
       .attr("d", lineData);
 

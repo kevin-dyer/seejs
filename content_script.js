@@ -22,10 +22,19 @@
         if (eleHTML) {
           sourceCode.push({name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
         }else if (eleSrc) {
-          loadXMLDoc(eleSrc, function (responseCode, url) {
-            sourceCode.push({name: url, size: responseCode.length, type: "file", code: responseCode});
-            batchResponse(sourceCode, sendMessage, requests);
-          });
+          loadXMLDoc(eleSrc, 
+            function (responseCode, url) {
+              sourceCode.push({name: url, size: responseCode.length, type: "file", code: responseCode});
+              batchResponse(sourceCode, sendMessage, requests);
+            },
+            function(responseCode) {
+              console.log("FAILURE: skipping resource!, r = ", r);
+              if (r === requests - 1) {
+                callback(sourceCode);
+              }else {
+                r++;
+              }
+            });
           requests++;
         }
       }
