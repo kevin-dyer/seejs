@@ -21,9 +21,21 @@
             getBaseName: function (functionObject) {
                 var name = functionObject.name,
                 namePath,
-                splitRegx = /\.|\//;
+                splitRegx = /\./;
 
                 if (functionObject && name){
+                    namePath = name.split(splitRegx);
+
+                    return namePath[namePath.length - 1];
+                }
+            },
+
+            getBaseFileName: function (functionObject) {
+                var name = functionObject.name,
+                    namePath,
+                    splitRegx = /\//;
+
+                if (functionObject && name) {
                     namePath = name.split(splitRegx);
 
                     return namePath[namePath.length - 1];

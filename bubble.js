@@ -226,16 +226,20 @@ function makeBubbleChart (root, sourceCode)  {
         });
 
     labels.attr("class", getClass)
+      .style("text-shadow", getTextShadow)
+      .style("opacity", 1e-6)
+      .style("fill", getTextFill)
+      .style("font-size", getFontSize)
+      .style("font-weight", getFontWeight)
+      .text(getLabelText)
+      .attr("x", function(d) { return d.x; })
+      .attr("y", function(d) { return d.y; })
       .transition()
-        .duration(750)
-        .style("opacity", getLabelOpacity)
-        .attr("x", function(d) { return d.x; })
-        .attr("y", function(d) { return d.y; });
+        .delay(500)
+        .duration(500)
+        .style("opacity", getLabelOpacity);
       
     labels.enter().append("svg:text")
-      .filter(function (d) {
-        return (d.r > 15 && d.name !== '[Anonymous]' && d.name !== 'root');
-      })
       .attr("class", getClass)
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
@@ -244,6 +248,7 @@ function makeBubbleChart (root, sourceCode)  {
       .style("text-shadow", getTextShadow)
       .style("fill", getTextFill)
       .style("font-size", getFontSize)
+      .style("font-weight", getFontWeight)
       .style("opacity", 1e-6)
       .text(getLabelText)
       .transition()
@@ -261,40 +266,55 @@ function makeBubbleChart (root, sourceCode)  {
   }
 
   function getLabelOpacity (d) {
-    return 1;
+    if (d.r < 15 || d.name === '[Anonymous]' || d.name === 'root') {
+      return 1e-6;
+    } else {
+      return 1;// / d.depth;
+    }
   }
 
   function getLabelText (d) {
     var text = d.name,
         textLength = text.length,
-        textSplit;
+        textSplit,
+        letterWidth = getFontSize(d),
+        circlePadding = 3,
+        minTextLength = 3;
+
+    if (d.name === '[Anonymous]' || d.name === 'root') {
+      return '';
+    }
     
-    if (textLength * 3 > d.r) {
-      text = UTILS.getBaseName(d);
+    if (textLength * letterWidth > (d.r * 2)) {
+      if (d.type === 'file') {
+        text = UTILS.getBaseFileName(d);
+      } else {
+        text = UTILS.getBaseName(d);
+      }
     }
 
-    while (text.length * 3 > d.r/d.depth && text.length >= 3) {
+    while ((text.length * letterWidth > d.r * circlePadding) && (text.length > minTextLength)) {
       text = text.slice(0, -1);
     }
 
     return text;
   }
 
-  
-  
-  //11(max depth of 3) - 26(depth of 0)
   function getFontSize (d) {
+    var fontScale = d3.scale.sqrt()
+      .domain([20, r])
+      .range([14, 50]);
 
-    var fontScale = d3.scale.linear()
-      .domain([0, 4])
-      .range([30, 11]);
+    return fontScale(d.r);
+  }
 
-    return d3.max([fontScale(d.depth), 11]);
-    // if (d.children && d.children.length) {
-    //   return 26/((d.depth + 1));
-    // } else {
-    //   return 11;
-    // }
+  function getFontWeight (d) {
+    if (d.r > 75) {
+      console.log("returning 800 weight!");
+      return 800;
+    } else {
+      return 400;
+    }
   }
 
   function removePaths () {
@@ -411,8 +431,6 @@ function makeBubbleChart (root, sourceCode)  {
         editor = ace.edit("editor"),
         range;
 
-    console.log("setting Editor contents...");
-
     if (d.treeNode) {
           range = d.treeNode.range;
 
@@ -424,8 +442,6 @@ function makeBubbleChart (root, sourceCode)  {
         parent = parent.parent;
       }
 
-      console.log("adding function to editor! parent: ", parent.name);
-      console.log("sourceCode typeof: ", typeof parent.sourceCode);
       if (d.type === 'file' || d.type === 'innerHTML') {
         editor.setValue(parent.sourceCode);
       } else {
