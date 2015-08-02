@@ -202,7 +202,7 @@ function makeBubbleChart (root, sourceCode)  {
   }
 
   function onCircleClick (d, i) {
-    toggleDependencies(d, i);
+    
 
     //clean up old selection:
     d3.select(".selected").style("stroke", getBorderColor)
@@ -214,6 +214,8 @@ function makeBubbleChart (root, sourceCode)  {
       .style("stroke-width", 4)
       .classed("selected", true);
 
+    toggleDependencies(d, i);
+    
     d3.event.stopPropagation();
   }
 
@@ -330,7 +332,7 @@ function makeBubbleChart (root, sourceCode)  {
   }
 
   function circleClickAction (d, i) {
-    var circles = vis.selectAll("circle"),
+    var circles = vis.selectAll("circle:not(.selected)"),
         thisD = d,
         thisI = i;
 

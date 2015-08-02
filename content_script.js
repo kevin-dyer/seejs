@@ -28,7 +28,6 @@
               batchResponse(sourceCode, sendMessage, requests);
             },
             function(responseCode) {
-              console.log("FAILURE: skipping resource!, r = ", r);
               if (r === requests - 1) {
                 callback(sourceCode);
               }else {
@@ -74,14 +73,14 @@
            }
            else if(xmlhttp.status == 400) {
               console.error('There was an error 400');
-              if (typeof faulure === 'function') {
-                faulure(xmlhttp.responseText);
+              if (typeof failure === 'function') {
+                failure(xmlhttp.responseText);
               }
            }
            else {
               console.error('something else other than 200 was returned');
-              if (typeof faulure === 'function') {
-                faulure(xmlhttp.responseText);
+              if (typeof failure === 'function') {
+                failure(xmlhttp.responseText);
               }
            }
         }
