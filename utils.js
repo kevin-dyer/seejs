@@ -65,6 +65,10 @@
                 var views = chrome.extension.getViews();
                     myWindow = views[views.length - 1];
                 myWindow.document.getElementsByClassName('loading-status')[0].innerHTML = status;
+            },
+
+            spliceSlice: function (str, index, count, add) {
+                return str.slice(0, index) + (add || "") + str.slice(index + count);
             }
         }
     exports.UTILS = utils;

@@ -36,54 +36,67 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    var tree,
-        i,
-        sourceCode = request.sourceCode,
-        sourceLength = sourceCode.length,
-        fileNode,
-        tracer = window.esmorph.Tracer,
-        code,
-        popup_url = chrome.extension.getURL("popup.html");
 
-    
+    if (request.type === 'sourceCode') {
+      var tree,
+          i,
+          sourceCode = request.sourceCode,
+          sourceLength = sourceCode.length,
+          fileNode,
+          tracer = window.esmorph.Tracer,
+          code,
+          popup_url = chrome.extension.getURL("popup.html"),
+          modifiedSource = '';
 
-    //console.log("back end recieved source code: ", request);
+      
 
-    pageUrl = request.url;
+      //console.log("back end recieved source code: ", request);
 
-    codeTree = {name: "root", myChildren: [], parent: null, type: "root"};
+      pageUrl = request.url;
 
-    for (i = 0; i < sourceLength; i++) {
-      code = sourceCode[i].code;
-      console.log(i + ". Adding " + sourceCode[i].name);
+      codeTree = {name: "root", myChildren: [], parent: null, type: "root"};
 
-      tree = esprima.parse(code, { range: true, loc: true});
-      fileNode = tracer.getFunctionTree(tree, code, sourceCode[i]);
-      fileNode.parent = codeTree;
-      codeTree.myChildren.push(fileNode);
+      for (i = 0; i < sourceLength; i++) {
+        code = sourceCode[i].code;
+        console.log(i + ". Adding " + sourceCode[i].name);
+
+        tree = esprima.parse(code, { range: true, loc: true});
+        fileNode = tracer.getFunctionTree(tree, code, sourceCode[i]);
+        fileNode.parent = codeTree;
+        fileNode.sourceIndex = i; // may not be necessary
+        codeTree.myChildren.push(fileNode);
+
+        modifiedSource += tracer.addFunctionTrace(code, fileNode);
+      }
+
+      console.log("setting scopedList: ");
+      codeTree = tracer.setScopedList(codeTree);
+
+      console.log("setting dependencies");
+      codeTree = tracer.setFunctionTreeDependencies(codeTree);
+
+      console.log("Adding hidden children: ");
+      codeTree = tracer.addHiddenChildren(codeTree);
+
+      console.log("Setting unique id's: ");
+      codeTree = tracer.setUniqueIds(codeTree);
+
+      console.log("Converting to children");
+      codeTree = tracer.convertToChildren(codeTree);
+
+
+      focusOrCreateTab(popup_url);
+      
+      if (request){
+        // var tracerSource = tracer.addFunctionTrace(sourceCode.code, codeTree);
+        
+        sendResponse(modifiedSource);
+        // sendResponse(sourceCode.map(function(s){return s.code;}).join(''));
+      }
+
+      chrome.browserAction.setIcon({path: 'blue-icon.png'});
+    } else if (request.type === 'trace') {
+      console.log("trace: ", request.uniqueId);
+      sendResponse("got request from: ", request.uniqueId);
     }
-
-    console.log("setting scopedList: ");
-    codeTree = tracer.setScopedList(codeTree);
-
-    console.log("setting dependencies");
-    codeTree = tracer.setFunctionTreeDependencies(codeTree);
-
-    console.log("Adding hidden children: ");
-    codeTree = tracer.addHiddenChildren(codeTree);
-
-    console.log("Setting unique id's: ");
-    codeTree = tracer.setUniqueIds(codeTree);
-
-    console.log("Converting to children");
-    codeTree = tracer.convertToChildren(codeTree);
-
-
-    focusOrCreateTab(popup_url);
-    
-    if (request){
-      sendResponse({status: 200});
-    }
-
-    chrome.browserAction.setIcon({path: 'blue-icon.png'});
   });

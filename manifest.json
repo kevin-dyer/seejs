@@ -25,6 +25,15 @@
     ],
     "persistent": false
   },
+  // "content_scripts": [
+  //   {
+  //     "matches": [
+  //       "http://*/*", 
+  //       "https://*/*"],
+  //     "js": ["tracer.js"]//,
+  //     //"run_at": "document_start"
+  //   }
+  // ],
 
   "manifest_version": 2
 }

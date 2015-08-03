@@ -1,57 +1,87 @@
-(function () {
-  console.log("This is the injected code!!!");
+(function (global) {
+  console.log("SeeJS code injection");
 
-        //get all scripts
-      var sourceCode = [],
-          scriptFiles = document.getElementsByTagName('script'),
-          filesLength = scriptFiles.length,
-          // ele,
-          // eleSrc,
-          // eleHTML,
-          i,
-          r = 0,
-          requests = 0;
+  var sourceCode = [],
+      scriptFiles = document.getElementsByTagName('script'),
+      filesLength = scriptFiles.length,
+      i,
+      r = 0,
+      requests = 0,
+      ele,
+      eleScr,
+      eleHTML;
 
-          //code = sourceCode; //switch the source
+  for (i = 0; i < filesLength; i++) {
+    ele = scriptFiles[i],
+    eleSrc = ele.getAttribute('src'),
+    eleHTML = ele.innerHTML;
 
-      for (i = 0; i < filesLength; i++) {
-        var ele = scriptFiles[i],
-            eleSrc = ele.getAttribute('src'),
-            eleHTML = ele.innerHTML;
-
-        if (eleHTML) {
-          //TODO: add extention option to include/exclude inline scripts
-          //sourceCode.push({name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
-        }else if (eleSrc) {
-          loadXMLDoc(eleSrc, 
-            function (responseCode, url) {
-              sourceCode.push({name: url, size: responseCode.length, type: "file", code: responseCode});
-              batchResponse(sourceCode, sendMessage, requests);
-            },
-            function(responseCode) {
-              if (r === requests - 1) {
-                callback(sourceCode);
-              }else {
-                r++;
-              }
-            });
-          requests++;
-        }
-      }
-
-      function batchResponse (sourceCode, callback, requests) {
-        if (r === requests - 1) {
-          callback(sourceCode);
-        }else {
-          r++;
-        }
-      }
-
-      function sendMessage (sourceCode) {
-        chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode}, function(response) {
-          console.log("Background response: ", response);
+    if (eleHTML) {
+      //TODO: add extention option to include/exclude inline scripts
+      //sourceCode.push({name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
+    }else if (eleSrc) {
+      loadXMLDoc(eleSrc, 
+        function (responseCode, url) {
+          sourceCode.push({name: url, size: responseCode.length, type: "file", code: responseCode});
+          batchResponse(sourceCode, sendMessage, requests);
+        },
+        function(responseCode) {
+          if (r === requests - 1) {
+            callback(sourceCode);
+          }else {
+            r++;
+          }
         });
-      }
+      requests++;
+    }
+
+    //TODO: test
+    //unset src attribute (try to prevent loading)
+    //ele.setAttribute('src', '');
+  }
+
+
+  //TODO: TEST
+  // for (i = 0; i < filesLength; i++) {
+  //   ele = scriptFiles[i],
+  //   // eleSrc = ele.getAttribute('src'),
+  //   // eleHTML = ele.innerHTML;
+
+  //   ele.setAttribute('src', '');
+
+  // }
+
+
+  function batchResponse (sourceCode, callback, requests) {
+    if (r === requests - 1) {
+      callback(sourceCode);
+    }else {
+      r++;
+    }
+  }
+
+  function sendMessage (sourceCode) {
+    chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode, type: 'sourceCode'}, function(response) {
+      console.log("Background response: ", response.length);
+
+      //TODO: add script tag to the bottom of the body to replace sourcecode
+      //remove old script tags
+      sourceCode.forEach(function(sr) {
+        console.log("removing old script tag: ", sr.name);
+        removejscssfile(sr.name, 'js');
+      });
+
+      var x = document.createElement("SCRIPT");
+      var t = document.createTextNode(response);
+      x.appendChild(t);
+      document.body.appendChild(x);
+
+    });
+  }
+
+  global.traceStart = function (uniqueId) {
+    console.log("called function: ", uniqueId);
+  }
 
   function loadXMLDoc(url, success, failure) {
     var xmlhttp;
@@ -91,4 +121,15 @@
     xmlhttp.send();
   }
 
-})();
+  function removejscssfile (filename, filetype) {
+    var targetelement=(filetype=="js")? "script" : (filetype=="css")? "link" : "none" //determine element type to create nodelist from
+    var targetattr=(filetype=="js")? "src" : (filetype=="css")? "href" : "none" //determine corresponding attribute to test for
+    var allsuspects=document.getElementsByTagName(targetelement)
+    for (var i=allsuspects.length; i>=0; i--){ //search backwards within nodelist for matching elements to remove
+    if (allsuspects[i] && allsuspects[i].getAttribute(targetattr)!=null && allsuspects[i].getAttribute(targetattr).indexOf(filename)!=-1)
+        allsuspects[i].parentNode.removeChild(allsuspects[i]) //remove element by calling parentNode.removeChild()
+    }
+  }
+
+
+})(window);

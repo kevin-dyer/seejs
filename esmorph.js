@@ -76,7 +76,7 @@
             return;
         }
 
-        children = object.myChildren;
+        children = object.myChildren || object.children;
         childrenLength = children.length;
         for(i = 0; i < childrenLength; i++) {
             child = children[i];
@@ -476,7 +476,7 @@
 
     function setUniqueIds (functionTree) {
         traverseFunctionTree(functionTree, function(node, path) {
-            node.uniqueId = UTILS.getId(node.treeNode);
+            node.uniqueId = node.uniqueId || UTILS.getId(node.treeNode);
         });
         return functionTree;
     }
@@ -520,6 +520,48 @@
         return functionTree;
     }
 
+    function addFunctionTrace (code, codeTree) {
+        var offset = 0, //adjust range to account for upstream insertions
+            traceStartInsert;// = 'traceStart(' + node.name + ', ' + node.uniqueId + ')';
+
+        console.log("codeTree: ", codeTree);
+        traverseFunctionTree(codeTree, function(node, path) {
+            //insert at node.range[0] + something, this will be
+
+            if (node.type === 'file' || node.type === 'inlineScript') {
+                return;
+            }
+
+            //console.log("FUNC: ", code.slice(node.treeNode.range[0], node.treeNode.range[1]));
+            var start = code.slice(node.treeNode.range[0] + offset).indexOf('{') + node.treeNode.range[0] + offset + 1;
+
+            //set uniqueId
+            node.uniqueId = UTILS.getId(node.treeNode);
+            //traceStartInsert = 'traceStart("' + node.uniqueId + '");';
+            //traceStartInsert = 'console.log("traceStart(' +  node.uniqueId + ')");';
+            traceStartInsert = 'chrome.runtime.sendMessage({type: "trace", uniqueId: "' + node.uniqueId + '"}, function(response){console.log("response: ", response);});';
+
+            // console.log("func: ", code.slice(node.treeNode.range[0] + offset, node.treeNode.range[0] + offset + 40));
+            // console.log("beginning { index: ", code.slice(node.treeNode.range[0] + offset).indexOf('{'));
+            // console.log("offset: ", offset);
+            // console.log("range[0]: ", node.treeNode.range[0], ", start: ", start, ", diff: ", start - node.treeNode.range[0]);
+            // console.log("begin: ", code.slice(start, start + 100));
+            // console.log("- ");
+
+            //console.log("traceStartInsert: ", traceStartInsert);
+
+            code = UTILS.spliceSlice(code, start, 0, traceStartInsert);
+
+            //console.log("here it is: ", code.slice(node.treeNode.range[0] + offset, start + 100));
+            offset += traceStartInsert.length;
+
+
+        });
+
+        return code;
+    }
+
+
     exports.Tracer = {
         init: init,
         functionTree: initFunctionTree,
@@ -528,7 +570,8 @@
         setFunctionTreeDependencies: setFunctionTreeDependencies,
         addHiddenChildren: addHiddenChildren,
         setUniqueIds: setUniqueIds,
-        convertToChildren: convertToChildren
+        convertToChildren: convertToChildren,
+        addFunctionTrace: addFunctionTrace
     };
 
 }(typeof exports === 'undefined' ? (esmorph = {}) : exports));
