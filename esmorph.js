@@ -116,6 +116,11 @@
 
         //this could be in visitor function
         functionObject = createFunctionObject(object, parent[0], code);
+
+        //TEST
+        // if (functionObject && parentFunction) {
+        //     functionObject.scopedList = parentFunction.scopedList || [];
+        // }
         
 
         for (key in object) {
@@ -129,6 +134,14 @@
                         if (getNodeScope(parentFunction).concat(parentFunction.myChildren).indexOf(functionObject) < 0) {
                             functionObject.parent = parentFunction;
                             parentFunction.myChildren.push(functionObject);
+
+                            //TEST
+                            // if (parentFunction.scopedList) {
+                            //     parentFunction.scopedList.push(functionObject);
+                            // } else {
+                            //     parentFunction.scopedList = [functionObject];
+                            // }
+
                             // console.log("functionTree: ", functionTree);
                             // console.log("parent: ", parentFunction);
                             // console.log("adding: ", functionObject);
@@ -141,6 +154,7 @@
                 }
             }
         }
+
     }
 
     function isEmpty(obj) {
@@ -306,6 +320,7 @@
             functionObject.treeNode = node;
             functionObject.dependencies = [];
             functionObject.myChildren = [];
+            functionObject.scopedList = [];
         }
 
         return functionObject;
@@ -337,21 +352,35 @@
         return functionTree;
     }
 
+    //NOTE: node.scopedList will be a 2d array of nodes
+    function setScopedList (functionTree) {
+        traverseFunctionTree(functionTree, function(node, path) {
+            if (!node.scopedList) {
+                node.scopedList = [];
+            }
+
+            if (node.parent && node.parent.scopedList.length) {
+                //TODO: should exclude anonymous functions from the lastscopedList block
+                node.scopedList = node.parent.scopedList.concat([node.scopedList]);
+            }
+            node.scopedList.push(node.myChildren);  
+        });
+        return functionTree;
+    }
+
     function setFunctionTreeDependencies (functionTree){
         traverseFunctionTree(functionTree, function (node, path) {
             var scopedList = [],
                 parent = node,
                 func,
                 i,
-                childLength = node.myChildren.length;
-
-            while (parent) {
-                if (parent && parent.myChildren) {
-                    scopedList = scopedList.concat(parent.myChildren);
-                }
-                parent = parent.parent;
-            }
-            node.dependencies = getDependencies(node.treeNode, scopedList);
+                childLength = node.myChildren.length,
+                flatScopedList;
+            
+            flatScopedList = node.scopedList.reduce(function(a, b) {
+              return b.concat(a);
+            });
+            node.dependencies = getDependencies(node.treeNode, flatScopedList);
 
             for (i = 0; i < childLength; i++) {
                 func = node.myChildren[i];
@@ -493,7 +522,13 @@
 
     exports.Tracer = {
         init: init,
-        functionTree: initFunctionTree
+        functionTree: initFunctionTree,
+        getFunctionTree: getFunctionTree,
+        setScopedList: setScopedList,
+        setFunctionTreeDependencies: setFunctionTreeDependencies,
+        addHiddenChildren: addHiddenChildren,
+        setUniqueIds: setUniqueIds,
+        convertToChildren: convertToChildren
     };
 
 }(typeof exports === 'undefined' ? (esmorph = {}) : exports));

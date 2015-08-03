@@ -1,3 +1,6 @@
+var codeTree,
+    pageUrl;
+
 function focusOrCreateTab(url) {
   chrome.windows.getAll({"populate":true}, function(windows) {
     var existing_tab = null;
@@ -20,10 +23,8 @@ function focusOrCreateTab(url) {
 }
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-  var popup_url = chrome.extension.getURL("popup.html");
 
-      //console.log("content_script_url: ", content_script_url);
-  focusOrCreateTab(popup_url);
+  chrome.browserAction.setIcon({path: 'red.png'});
 
   chrome.tabs.executeScript(tab.id, {
     file: 'content_script.js'
@@ -33,51 +34,56 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   
 
 
-
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    var codeTree,
-        views = chrome.extension.getViews(),
-        myWindow = views[views.length - 1],
+    var tree,
         i,
-        sourceLength = request.sourceCode.length,
-        fileNode;
-    
-    console.log("back end recieved source code: ", request);
+        sourceCode = request.sourceCode,
+        sourceLength = sourceCode.length,
+        fileNode,
+        tracer = window.esmorph.Tracer,
+        code,
+        popup_url = chrome.extension.getURL("popup.html");
 
-    myWindow.document.getElementsByClassName('webpage-title')[0].innerHTML = request.url;
     
-    
-    console.log("running esmorph on it");
-    myWindow.UTILS.updateLoaderStatus("Creating FunctionTree...");
 
-    //var extensionId = chrome.runtime.id;
-    codeTree = {name: "root", children: [], dependencies: [], parent: null, type: "root"};
-    
-    //TODO: run bubble update func as each src is processed
+    //console.log("back end recieved source code: ", request);
+
+    pageUrl = request.url;
+
+    codeTree = {name: "root", myChildren: [], parent: null, type: "root"};
+
     for (i = 0; i < sourceLength; i++) {
-      console.log(i + ". Adding " + request.sourceCode[i].name);
-      myWindow.UTILS.updateLoaderStatus("Adding " + request.sourceCode[i].name);
-      fileNode = myWindow.runEsmorph(request.sourceCode[i]);
+      code = sourceCode[i].code;
+      console.log(i + ". Adding " + sourceCode[i].name);
+
+      tree = esprima.parse(code, { range: true, loc: true});
+      fileNode = tracer.getFunctionTree(tree, code, sourceCode[i]);
       fileNode.parent = codeTree;
-      codeTree.children.push(fileNode);
+      codeTree.myChildren.push(fileNode);
     }
-    // codeTree = myWindow.runEsmorph(request.sourceCode);
-    console.log("codeTree in background: ", codeTree);
 
-    //console.log("making bubble chart");
-    myWindow.UTILS.updateLoaderStatus("Making Bubble Chart");
+    console.log("setting scopedList: ");
+    codeTree = tracer.setScopedList(codeTree);
 
-    myWindow.makeBubbleChart(codeTree, request.sourceCode.map(function(c) {return c.code}).join(''));
+    console.log("setting dependencies");
+    codeTree = tracer.setFunctionTreeDependencies(codeTree);
 
-    myWindow.UTILS.hideLoader();
+    console.log("Adding hidden children: ");
+    codeTree = tracer.addHiddenChildren(codeTree);
 
-    myWindow.document.getElementById('editor').style.display = "inline-block";
+    console.log("Setting unique id's: ");
+    codeTree = tracer.setUniqueIds(codeTree);
 
-// console.log("show popup.html (background page)");
-// chrome.tabs.create({url: chrome.extension.getURL('popup.html')});
+    console.log("Converting to children");
+    codeTree = tracer.convertToChildren(codeTree);
 
+
+    focusOrCreateTab(popup_url);
+    
     if (request){
       sendResponse({status: 200});
     }
+
+    chrome.browserAction.setIcon({path: 'blue-icon.png'});
   });

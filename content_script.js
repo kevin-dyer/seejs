@@ -20,7 +20,8 @@
             eleHTML = ele.innerHTML;
 
         if (eleHTML) {
-          sourceCode.push({name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
+          //TODO: add extention option to include/exclude inline scripts
+          //sourceCode.push({name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
         }else if (eleSrc) {
           loadXMLDoc(eleSrc, 
             function (responseCode, url) {

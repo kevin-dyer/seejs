@@ -70,5 +70,5 @@ div#info {
     width: 600px;
     height: 750px;
     float:right;
-    display: none;
+    /*display: none;*/
 }
