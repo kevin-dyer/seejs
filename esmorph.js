@@ -524,7 +524,7 @@
         var offset = 0, //adjust range to account for upstream insertions
             traceStartInsert;// = 'traceStart(' + node.name + ', ' + node.uniqueId + ')';
 
-        console.log("codeTree: ", codeTree);
+        //console.log("codeTree: ", codeTree);
         traverseFunctionTree(codeTree, function(node, path) {
             //insert at node.range[0] + something, this will be
 
@@ -539,7 +539,8 @@
             node.uniqueId = UTILS.getId(node.treeNode);
             //traceStartInsert = 'traceStart("' + node.uniqueId + '");';
             //traceStartInsert = 'console.log("traceStart(' +  node.uniqueId + ')");';
-            traceStartInsert = 'chrome.runtime.sendMessage({type: "trace", uniqueId: "' + node.uniqueId + '"}, function(response){console.log("response: ", response);});';
+            //traceStartInsert = 'chrome.runtime.sendMessage({type: "trace", uniqueId: "' + node.uniqueId + '"}, function(response){console.log("response: ", response);});';
+            traceStartInsert = ' window.postMessage({ type: "TARGET_PAGE", uniqueId: "'+ node.uniqueId +'", direction: "start"}, "*");; ';
 
             // console.log("func: ", code.slice(node.treeNode.range[0] + offset, node.treeNode.range[0] + offset + 40));
             // console.log("beginning { index: ", code.slice(node.treeNode.range[0] + offset).indexOf('{'));
@@ -554,9 +555,9 @@
 
             //console.log("here it is: ", code.slice(node.treeNode.range[0] + offset, start + 100));
             offset += traceStartInsert.length;
-
-
         });
+
+        //here insert the traceEndInsert
 
         return code;
     }

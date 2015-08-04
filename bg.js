@@ -48,16 +48,13 @@ chrome.runtime.onMessage.addListener(
           popup_url = chrome.extension.getURL("popup.html"),
           modifiedSource = '';
 
-      
-
-      //console.log("back end recieved source code: ", request);
-
       pageUrl = request.url;
 
       codeTree = {name: "root", myChildren: [], parent: null, type: "root"};
 
       for (i = 0; i < sourceLength; i++) {
         code = sourceCode[i].code;
+
         console.log(i + ". Adding " + sourceCode[i].name);
 
         tree = esprima.parse(code, { range: true, loc: true});
@@ -84,19 +81,23 @@ chrome.runtime.onMessage.addListener(
       console.log("Converting to children");
       codeTree = tracer.convertToChildren(codeTree);
 
+      console.log("opening visualization page");
 
       focusOrCreateTab(popup_url);
       
       if (request){
-        // var tracerSource = tracer.addFunctionTrace(sourceCode.code, codeTree);
-        
         sendResponse(modifiedSource);
-        // sendResponse(sourceCode.map(function(s){return s.code;}).join(''));
       }
 
       chrome.browserAction.setIcon({path: 'blue-icon.png'});
-    } else if (request.type === 'trace') {
-      console.log("trace: ", request.uniqueId);
-      sendResponse("got request from: ", request.uniqueId);
     }
+
+    chrome.runtime.onConnect.addListener(function(port) {
+      console.assert(port.name === 'traceport');
+      port.onMessage.addListener(function(msg) {
+        if (msg.type === 'trace') {
+          console.log("TRACE: ", msg);
+        }
+      })
+    })
   });

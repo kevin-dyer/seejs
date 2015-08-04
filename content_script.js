@@ -79,6 +79,7 @@
     });
   }
 
+  //this is NOT visible by content window
   global.traceStart = function (uniqueId) {
     console.log("called function: ", uniqueId);
   }
@@ -130,6 +131,21 @@
         allsuspects[i].parentNode.removeChild(allsuspects[i]) //remove element by calling parentNode.removeChild()
     }
   }
+
+  var port;// = chrome.runtime.connect({name: "traceport"});
+  window.addEventListener("message", function(event) {
+    port = chrome.runtime.connect({name: "traceport"});;
+    // We only accept messages from ourselves
+    if (event.source != window)
+      return;
+
+    if (event.data.type && (event.data.type === "TARGET_PAGE")) {
+      console.log("Content script received: " + event.data.uniqueId);
+      port.postMessage({type: "trace", data: event.data});
+    }
+  }, false);
+
+
 
 
 })(window);
