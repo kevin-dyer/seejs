@@ -46,7 +46,7 @@ chrome.runtime.onMessage.addListener(
           tracer = window.esmorph.Tracer,
           code,
           popup_url = chrome.extension.getURL("popup.html"),
-          modifiedSource = '';
+          modifiedSource = [];
 
       pageUrl = request.url;
 
@@ -63,7 +63,7 @@ chrome.runtime.onMessage.addListener(
         fileNode.sourceIndex = i; // may not be necessary
         codeTree.myChildren.push(fileNode);
 
-        modifiedSource += tracer.addFunctionTrace(code, fileNode);
+        modifiedSource.push(tracer.addFunctionTrace(code, fileNode));
       }
 
       console.log("setting scopedList: ");

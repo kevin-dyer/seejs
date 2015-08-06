@@ -45,7 +45,6 @@
     };
 
     // Executes visitor on the object and its children (recursively).
-
     function traverse(object, visitor, master) {
         var key, child, parent, path;
 
@@ -88,13 +87,6 @@
         }
     }
 
-
-
-
-
-
-
-    //function tree should be passed in as: {name: 'root', children: []}
     function createFunctionTree (object, code, functionTree, master, masterFunction) {
         var key, 
             child, 
@@ -104,24 +96,10 @@
             i, 
             functionObject;
 
-        //parent = (typeof master === 'undefined') ? [] : master;
         parent = (typeof master === 'undefined') ? [] : master;
         parentFunction = (masterFunction && !isEmpty(masterFunction)) ? masterFunction : functionTree;
 
-
-
-        // if (visitor.call(null, object, parent) === false) {
-        //     return;
-        // }
-
-        //this could be in visitor function
         functionObject = createFunctionObject(object, parent[0], code);
-
-        //TEST
-        // if (functionObject && parentFunction) {
-        //     functionObject.scopedList = parentFunction.scopedList || [];
-        // }
-        
 
         for (key in object) {
             if (object.hasOwnProperty(key)) {
@@ -134,18 +112,6 @@
                         if (getNodeScope(parentFunction).concat(parentFunction.myChildren).indexOf(functionObject) < 0) {
                             functionObject.parent = parentFunction;
                             parentFunction.myChildren.push(functionObject);
-
-                            //TEST
-                            // if (parentFunction.scopedList) {
-                            //     parentFunction.scopedList.push(functionObject);
-                            // } else {
-                            //     parentFunction.scopedList = [functionObject];
-                            // }
-
-                            // console.log("functionTree: ", functionTree);
-                            // console.log("parent: ", parentFunction);
-                            // console.log("adding: ", functionObject);
-                            // console.log("to children: ", parentFunction.children);
                         }
                         createFunctionTree(child, code, functionTree, path, functionObject);
                     } else {
@@ -154,13 +120,13 @@
                 }
             }
         }
-
     }
 
     function isEmpty(obj) {
         for(var prop in obj) {
-            if(obj.hasOwnProperty(prop))
+            if(obj.hasOwnProperty(prop)) {
                 return false;
+            }
         }
 
         return true;
@@ -176,56 +142,17 @@
             i,
             formattedList;
 
-  
-
         tree = esprima.parse(code, { range: true, loc: true});
         console.log("esprima tree: ", tree);
 
-        //init function tree
         functionTree = getFunctionTree(tree, code);
         functionTree = setFunctionTreeDependencies(functionTree);
         functionTree = addHiddenChildren(functionTree);
         console.log("functionTree!!!, ", functionTree);
 
-        // // TREE
-        // //makeTree(functionTree);
-
         // // BUBBLE
         functionTree = convertToChildren(functionTree);
         makeBubbleChart(functionTree, code);
-
-        // SANKEY
-        //var sankeyData = getSankeyData(functionTree);
-        // console.log("sankeyData: ", sankeyData);
-        // makeSankeyPlot(sankeyData);
-
-        // functionList = getFunctionList(tree, code);
-        // functionList = setParentFunctions(functionList);
-        // functionList = setScopedFunctionList(functionList);
-        // functionList = setDependencies(functionList);
-
-
-
-        // formattedList = {
-        //     name: '',
-        //     dependencies: getScopedFunctionList(null, functionList).map(function(ele) {
-        //         return {
-        //             name: ele.name === '[Anonymous]' ? '' : ele.name,
-        //             dependencies: ele.dependencies
-        //         };
-        //     })
-        // };
-
-        // //remove root node if there is only one dependency.
-        // if (formattedList.dependencies.length === 1) {
-        //     formattedList = formattedList.dependencies[0];
-        // }
-        
-        // //makeTree(formattedList);
-
-        
-        // console.log("functionList: ", functionList);
-        // console.log("formatted list: ", formattedList);
 
         return code;
     }
@@ -326,16 +253,6 @@
         return functionObject;
     }
 
-    //TODO: replace func with new Func constructor
-    // function Func (func) {
-    //     func.parent = functionParent;
-    //     func.children = [];
-    //     func.dependencies = [];
-    //     func.treeNode = node;
-
-    //     return func;
-    // }
-
     //create tree of scoped functions
     function getFunctionTree (node, code, sourceCode) {
         //console.log("sourceCode in getFunctionTree: ", sourceCode);
@@ -422,9 +339,6 @@
             if (parent && parent.type === Syntax.CallExpression) {
                 isAFunction = true;
             } else if (parent && parent.property === element) {
-                
-
-                //console.log("found a parent property");
                 isAFunction = true;
             }           
             
@@ -433,18 +347,12 @@
                     return UTILS.getBaseName(funcObject);
                 }).indexOf(UTILS.getBaseName(element));
 
-                //console.log("element: ", element.name ,", scopedList: ", scopedList.map(function(x) {return x.name}), ", funcIndex: ", funcIndex);
-
                 if (funcIndex >= 0) {
                     existingIndex = children.map(function (funcObject) {
                         return UTILS.getBaseName(funcObject);
                     }).indexOf(UTILS.getBaseName(element));
 
-                    //console.log("element: ", element ,", scopedList: ", scopedList.map(function(node) {return node.name}), ", funcIndex: ", funcIndex, ", existingIndex: ", existingIndex, ", element.type: ", element.type);
-
                     if (existingIndex === -1) {
-                        //console.log("adding to children");
-
                         children.push(scopedList[funcIndex]);
                     }
                 }    
@@ -494,74 +402,47 @@
         var tree,
             functionTree,
             code = sourceCode.code;
-            //myWindow = chrome.extension.getViews({type: "popup"})[0];
 
-
-        UTILS.updateLoaderStatus("Getting Esprima Tree");
         tree = esprima.parse(code, { range: true, loc: true});
-        //console.log("esprima tree: ", tree);
 
-        //init function tree
-        UTILS.updateLoaderStatus("Creating Function Tree");
         functionTree = getFunctionTree(tree, code, sourceCode);
-        UTILS.updateLoaderStatus("Setting Dependencies");
         functionTree = setFunctionTreeDependencies(functionTree);
-        UTILS.updateLoaderStatus("Adding Hidden Children");
         functionTree = addHiddenChildren(functionTree);
-
-        //set unqiue ID
         functionTree = setUniqueIds(functionTree);
-
-        UTILS.updateLoaderStatus("Converting to Children");
         functionTree = convertToChildren(functionTree);
-
-        
 
         return functionTree;
     }
 
     function addFunctionTrace (code, codeTree) {
         var offset = 0, //adjust range to account for upstream insertions
-            traceStartInsert;// = 'traceStart(' + node.name + ', ' + node.uniqueId + ')';
+            traceStartInsert;
 
-        //console.log("codeTree: ", codeTree);
         traverseFunctionTree(codeTree, function(node, path) {
-            //insert at node.range[0] + something, this will be
+            var start;
 
             if (node.type === 'file' || node.type === 'inlineScript') {
                 return;
             }
 
-            //console.log("FUNC: ", code.slice(node.treeNode.range[0], node.treeNode.range[1]));
-            var start = code.slice(node.treeNode.range[0] + offset).indexOf('{') + node.treeNode.range[0] + offset + 1;
-
-            //set uniqueId
+            start = code.slice(node.treeNode.range[0] + offset).indexOf('{') + node.treeNode.range[0] + offset + 1;
             node.uniqueId = UTILS.getId(node.treeNode);
-            //traceStartInsert = 'traceStart("' + node.uniqueId + '");';
-            //traceStartInsert = 'console.log("traceStart(' +  node.uniqueId + ')");';
-            //traceStartInsert = 'chrome.runtime.sendMessage({type: "trace", uniqueId: "' + node.uniqueId + '"}, function(response){console.log("response: ", response);});';
-            traceStartInsert = ' window.postMessage({ type: "TARGET_PAGE", uniqueId: "'+ node.uniqueId +'", direction: "start"}, "*");; ';
-
-            // console.log("func: ", code.slice(node.treeNode.range[0] + offset, node.treeNode.range[0] + offset + 40));
-            // console.log("beginning { index: ", code.slice(node.treeNode.range[0] + offset).indexOf('{'));
-            // console.log("offset: ", offset);
-            // console.log("range[0]: ", node.treeNode.range[0], ", start: ", start, ", diff: ", start - node.treeNode.range[0]);
-            // console.log("begin: ", code.slice(start, start + 100));
-            // console.log("- ");
-
-            //console.log("traceStartInsert: ", traceStartInsert);
-
+            traceStartInsert = ' postMessage({ type: "TARGET_PAGE", uniqueId: "'+ node.uniqueId +'", direction: "start"}, "*"); ';
             code = UTILS.spliceSlice(code, start, 0, traceStartInsert);
-
-            //console.log("here it is: ", code.slice(node.treeNode.range[0] + offset, start + 100));
             offset += traceStartInsert.length;
         });
 
-        //here insert the traceEndInsert
+        //remove google api loading header
+        if (code.slice(0, 50).indexOf('gapi.loaded') > -1) {
+            console.log("removing google api loading header");
+
+            code = code.replace(/gapi\.loaded(_\d+)?/, '');
+        }
+
+        //TODO: insert the traceEndInsert
 
         return code;
     }
-
 
     exports.Tracer = {
         init: init,

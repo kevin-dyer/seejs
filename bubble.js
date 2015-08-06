@@ -11,15 +11,15 @@
         colorListLength = colorList.length, //9
 
         //colors:
-        backgroundColor = "#FFF", //not working
+        backgroundColor = "#FFF",
         selfBorderColor = "#f33",
         depBorderColor = "black",
-        defaultBorderColor = "#1C5787", //steelblue", //colorList[8],
+        defaultBorderColor = "#1C5787",
         anonymousBorderColor = "#ffcf40",
         noDepBorderColor = "steelblue",
         fileBorderColor = colorList[8],
 
-        defaultFillColor = "#1f77b4", //colorList[7],
+        defaultFillColor = "#1f77b4",
         selfFillColor = defaultFillColor,
         depFillColor = colorList[7],
         anonymousFillColor = backgroundColor,
@@ -63,7 +63,6 @@
         });
 
     circles
-      .attr("class", getClass)
       .style("stroke", getBorderColor)
       .style("fill", getFillColor)
       .style("stroke-width", getBorderWidth)
@@ -76,6 +75,9 @@
         
     circles.enter().append("svg:circle")
       .attr("class", getClass)
+      .attr("id", function (d) {
+        return 'n' + d.uniqueId;
+      })
       .attr("cx", function(d) { return d.x; })
       .attr("cy", function(d) { return d.y; })
       .attr("r", function(d) { return d.r; })
@@ -89,12 +91,9 @@
         if (d.name !== 'root' && d.type !== 'hidden') {
           tip.show(d);
         }
-        //TODO: messing up red selected circle
-        //d3.select(this).style("stroke", "black");
       })
       .on('mouseout', function (d) {
         tip.hide();
-        //d3.select(this).style("stroke", getBorderColor);
       });
 
     circles.exit()
@@ -175,7 +174,7 @@
     if (d.r < 15 || d.name === '[Anonymous]' || d.name === 'root') {
       return 1e-6;
     } else {
-      return textOpacityScale(d.r);// / d.depth;
+      return textOpacityScale(d.r);
     }
   }
 
@@ -282,7 +281,6 @@
       })
       .style("stroke-linecap", "round")
       .attr("opacity", 0.9)
-      //.attr("d", d3.svg.diagonal());
       .attr("d", lineData);
 
     paths.each(function(d) { d.totalLength = this.getTotalLength(); d.highlight = true;})
@@ -492,16 +490,38 @@
   function getClass (d) {
     var myClass;
     myClass = d.children && d.children.length ? "parent" : "child";
-    if (d.uniqueId) {
-      myClass += ' n' + d.uniqueId;
-    }
+    // if (d.uniqueId) {
+    //   myClass += ' n' + d.uniqueId;
+    // }
     return myClass;
+  }
+
+  function highlightActiveNode(uniqueId) {
+    console.log("hightlightActiveNode fired");
+    var nodeData = vis.select('#n' + uniqueId);
+
+    vis.append("svg:circle")
+      .attr("cx", nodeData.attr("cx"))
+      .attr("cy", nodeData.attr("cy"))
+      .attr("r", nodeData.attr("r"))
+      .attr("class", "highlighted")
+      .transition()
+        .duration(200)
+        .attr("r", parseFloat(nodeData.attr("r")) + 50)
+        //.style("stroke-width", 50)
+      .transition()
+        .delay(200)
+        .duration(200)
+        .attr("r", 0)
+        .remove();
+        //.style("stroke-width", bubble.getBorderWidth);
   }
 
   window.bubble = {
     makeBubbleChart: makeBubbleChart,
     updateBubbleChart: update,
-    getBorderWidth: getBorderWidth
+    getBorderWidth: getBorderWidth,
+    highlightActiveNode: highlightActiveNode
   }
 })(window);
 
@@ -520,22 +540,10 @@ document.getElementById('start-tracer').addEventListener("click", function () {
     port.onMessage.addListener(function(msg) {
       if (msg.type === 'trace') {
         console.log("TRACE: ", msg);
-        highlightActiveNode(msg.data.uniqueId);
+        bubble.highlightActiveNode(msg.data.uniqueId);
       }
     })
   });
 });
-
-function highlightActiveNode(uniqueId) {
-  console.log("hightlightActiveNode fired");
-  d3.select('.n' + uniqueId)
-    .transition()
-      .duration(200)
-      .style("stroke-width", 50)
-    .transition()
-      .delay(200)
-      .duration(200)
-      .style("stroke-width", bubble.getBorderWidth);
-}
 
 

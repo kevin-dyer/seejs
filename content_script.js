@@ -34,23 +34,7 @@
         });
       requests++;
     }
-
-    //TODO: test
-    //unset src attribute (try to prevent loading)
-    //ele.setAttribute('src', '');
   }
-
-
-  //TODO: TEST
-  // for (i = 0; i < filesLength; i++) {
-  //   ele = scriptFiles[i],
-  //   // eleSrc = ele.getAttribute('src'),
-  //   // eleHTML = ele.innerHTML;
-
-  //   ele.setAttribute('src', '');
-
-  // }
-
 
   function batchResponse (sourceCode, callback, requests) {
     if (r === requests - 1) {
@@ -62,7 +46,7 @@
 
   function sendMessage (sourceCode) {
     chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode, type: 'sourceCode'}, function(response) {
-      console.log("Background response: ", response.length);
+      var d, x, t;
 
       //TODO: add script tag to the bottom of the body to replace sourcecode
       //remove old script tags
@@ -71,17 +55,15 @@
         removejscssfile(sr.name, 'js');
       });
 
-      var x = document.createElement("SCRIPT");
-      var t = document.createTextNode(response);
-      x.appendChild(t);
-      document.body.appendChild(x);
-
+      d = document.createElement("DIV");
+      response.forEach(function(fileText) {
+        x = document.createElement("SCRIPT");
+        t = document.createTextNode(fileText);
+        x.appendChild(t);
+        d.appendChild(x);
+      });
+      document.body.appendChild(d);
     });
-  }
-
-  //this is NOT visible by content window
-  global.traceStart = function (uniqueId) {
-    console.log("called function: ", uniqueId);
   }
 
   function loadXMLDoc(url, success, failure) {
@@ -98,7 +80,6 @@
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
            if(xmlhttp.status == 200){
-               //document.getElementById("myDiv").innerHTML = xmlhttp.responseText;
               if (typeof success === 'function') {
                 success(xmlhttp.responseText, url);
               }
@@ -132,20 +113,15 @@
     }
   }
 
-  var port;// = chrome.runtime.connect({name: "traceport"});
   window.addEventListener("message", function(event) {
-    port = chrome.runtime.connect({name: "traceport"});;
-    // We only accept messages from ourselves
+    var port = chrome.runtime.connect({name: "traceport"});;
+    // only accept messages from ourselves
     if (event.source != window)
       return;
 
     if (event.data.type && (event.data.type === "TARGET_PAGE")) {
-      //console.log("Content script received: " + event.data.uniqueId);
       port.postMessage({type: "trace", data: event.data});
     }
   }, false);
-
-
-
 
 })(window);

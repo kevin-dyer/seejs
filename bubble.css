@@ -33,4 +33,9 @@ svg.bubble-chart {
   float:left;
 }
 
+circle.highlighted {
+  fill: #ffcf40;
+  opacity: 0.8;
+}
+
 

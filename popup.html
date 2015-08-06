@@ -1,9 +1,5 @@
 <!doctype html>
-<!--
- This page is shown when the extension button is clicked, because the
- "browser_action" field in manifest.json contains the "default_popup" key with
- value "popup.html".
- -->
+
 <html>
   <head>
     <title>SeeJS</title>
@@ -60,22 +56,21 @@
   </head>
 
   <body>
-  <h1 class="webpage-title"></h1>
-  <!-- <div class="loading">
-    <img class="loading-gif" src="colored-loading.gif" />
-    <div class="loading-status">Hold Up, its loading</div>
-  </div> -->
+    <h1 class="webpage-title"></h1>
+    <!-- <div class="loading">
+      <img class="loading-gif" src="colored-loading.gif" />
+      <div class="loading-status">Hold Up, its loading</div>
+    </div> -->
 
-  <svg class="bubble-chart"></svg>
+    <svg class="bubble-chart"></svg>
 
-  <pre id="editor">var instructions = "Click on a function to see its source code.";</pre>
+    <pre id="editor">var instructions = "Click on a function to see its source code.";</pre>
 
-  <button id="start-tracer">Trace</button>
+    <button id="start-tracer">Trace</button>
   
 
     <!-- Need to load this one after the editor div is present -->
     <script src="editor_config.js" type="text/javascript"></script>
-
     <script src="bubble.js"></script>
   </body>
 </html>
