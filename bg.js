@@ -92,12 +92,13 @@ chrome.runtime.onMessage.addListener(
       chrome.browserAction.setIcon({path: 'blue-icon.png'});
     }
 
-    chrome.runtime.onConnect.addListener(function(port) {
-      console.assert(port.name === 'traceport');
-      port.onMessage.addListener(function(msg) {
-        if (msg.type === 'trace') {
-          console.log("TRACE: ", msg);
-        }
-      })
-    })
+    // //tracer listener
+    // chrome.runtime.onConnect.addListener(function(port) {
+    //   console.assert(port.name === 'traceport');
+    //   port.onMessage.addListener(function(msg) {
+    //     if (msg.type === 'trace') {
+    //       console.log("TRACE: ", msg);
+    //     }
+    //   })
+    // });
   });

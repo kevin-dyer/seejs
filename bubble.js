@@ -1,5 +1,5 @@
 (function (exports) {
-  var w = 720,
+  var w = 730,
         h = 750,
         r = 720,
         x = d3.scale.linear().range([0, r]),
@@ -168,10 +168,14 @@
   }
 
   function getLabelOpacity (d) {
+    var textOpacityScale = d3.scale.sqrt()
+          .domain([20, r])
+          .range([1, 0.1])
+
     if (d.r < 15 || d.name === '[Anonymous]' || d.name === 'root') {
       return 1e-6;
     } else {
-      return 1;// / d.depth;
+      return textOpacityScale(d.r);// / d.depth;
     }
   }
 
@@ -486,12 +490,18 @@
   }
 
   function getClass (d) {
-    return d.children && d.children.length ? "parent" : "child";
+    var myClass;
+    myClass = d.children && d.children.length ? "parent" : "child";
+    if (d.uniqueId) {
+      myClass += ' n' + d.uniqueId;
+    }
+    return myClass;
   }
 
   window.bubble = {
     makeBubbleChart: makeBubbleChart,
-    updateBubbleChart: update
+    updateBubbleChart: update,
+    getBorderWidth: getBorderWidth
   }
 })(window);
 
@@ -501,3 +511,31 @@
 var background = chrome.extension.getBackgroundPage();
 bubble.makeBubbleChart(background.codeTree);
 document.getElementsByClassName('webpage-title')[0].innerHTML = background.pageUrl;
+
+document.getElementById('start-tracer').addEventListener("click", function () {
+  //tracer listener
+  console.log("adding trace listener");
+  chrome.runtime.onConnect.addListener(function(port) {
+    console.assert(port.name === 'traceport');
+    port.onMessage.addListener(function(msg) {
+      if (msg.type === 'trace') {
+        console.log("TRACE: ", msg);
+        highlightActiveNode(msg.data.uniqueId);
+      }
+    })
+  });
+});
+
+function highlightActiveNode(uniqueId) {
+  console.log("hightlightActiveNode fired");
+  d3.select('.n' + uniqueId)
+    .transition()
+      .duration(200)
+      .style("stroke-width", 50)
+    .transition()
+      .delay(200)
+      .duration(200)
+      .style("stroke-width", bubble.getBorderWidth);
+}
+
+

@@ -140,7 +140,7 @@
       return;
 
     if (event.data.type && (event.data.type === "TARGET_PAGE")) {
-      console.log("Content script received: " + event.data.uniqueId);
+      //console.log("Content script received: " + event.data.uniqueId);
       port.postMessage({type: "trace", data: event.data});
     }
   }, false);

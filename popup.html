@@ -36,6 +36,14 @@
         font-size: 20px;
       }
 
+      #start-tracer {
+        position: absolute;
+        top: 60px;
+        right: 40px;
+        font-size: 18px;
+        cursor:pointer;
+      }
+
     </style>
     
     <link rel="stylesheet" href="style.css">
@@ -53,14 +61,16 @@
 
   <body>
   <h1 class="webpage-title"></h1>
-  <div class="loading">
+  <!-- <div class="loading">
     <img class="loading-gif" src="colored-loading.gif" />
     <div class="loading-status">Hold Up, its loading</div>
-  </div>
+  </div> -->
 
   <svg class="bubble-chart"></svg>
 
   <pre id="editor">var instructions = "Click on a function to see its source code.";</pre>
+
+  <button id="start-tracer">Trace</button>
   
 
     <!-- Need to load this one after the editor div is present -->
