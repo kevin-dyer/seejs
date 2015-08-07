@@ -507,14 +507,12 @@
       .attr("class", "highlighted")
       .transition()
         .duration(200)
-        .attr("r", parseFloat(nodeData.attr("r")) + 50)
-        //.style("stroke-width", 50)
+        .attr("r", parseInt(nodeData.attr("r")) + 10)
       .transition()
         .delay(200)
         .duration(200)
         .attr("r", 0)
         .remove();
-        //.style("stroke-width", bubble.getBorderWidth);
   }
 
   window.bubble = {
@@ -528,22 +526,49 @@
 
 
 //JUST A TEST:::
-var background = chrome.extension.getBackgroundPage();
-bubble.makeBubbleChart(background.codeTree);
-document.getElementsByClassName('webpage-title')[0].innerHTML = background.pageUrl;
+var background = chrome.extension.getBackgroundPage(),
+    pageTitle = document.getElementsByClassName('webpage-title')[0],
+    startTraceButton = document.getElementById('start-tracer'),
+    stopTraceButton = document.getElementById('stop-tracer');
 
-document.getElementById('start-tracer').addEventListener("click", function () {
-  //tracer listener
+bubble.makeBubbleChart(background.codeTree);
+
+pageTitle.innerHTML = background.pageUrl;
+
+startTraceButton.addEventListener("click", listenToTrace);
+stopTraceButton.addEventListener("click", stopListeningToTrace);
+
+function listenToTrace () {
   console.log("adding trace listener");
-  chrome.runtime.onConnect.addListener(function(port) {
-    console.assert(port.name === 'traceport');
+
+  chrome.runtime.onConnect.addListener(receiveFilterTrace);
+  background.initTrace();
+
+  startTraceButton.style.display = 'none';
+  stopTraceButton.style.display = 'inline-block';
+}
+
+function stopListeningToTrace () {
+  console.log("stopping trace listener");
+
+  //chrome.runtime.onConnect.removeListener(receiveFilterTrace);
+  //also need to stop background listener
+  //chrome.runtime.onMessage.removeListener(receiveFilterTrace);
+  chrome.runtime.reload();
+
+  //startTraceButton.style.display = 'inline-block';
+  //stopTraceButton.style.display = 'none';
+}
+
+function receiveFilterTrace (port) {
+  if (port.name === 'filteredTrace') {
     port.onMessage.addListener(function(msg) {
-      if (msg.type === 'trace') {
-        console.log("TRACE: ", msg);
+      if (msg.type === 'trace2') {
+        console.log("TRACE2: ", msg);
         bubble.highlightActiveNode(msg.data.uniqueId);
       }
     })
-  });
-});
+  }
+}
 
 

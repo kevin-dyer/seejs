@@ -90,15 +90,53 @@ chrome.runtime.onMessage.addListener(
       }
 
       chrome.browserAction.setIcon({path: 'blue-icon.png'});
-    }
-
-    // //tracer listener
-    // chrome.runtime.onConnect.addListener(function(port) {
-    //   console.assert(port.name === 'traceport');
-    //   port.onMessage.addListener(function(msg) {
-    //     if (msg.type === 'trace') {
-    //       console.log("TRACE: ", msg);
-    //     }
-    //   })
-    // });
+    }  
   });
+
+// //tracer listener
+var initTrace = function () {
+  chrome.runtime.onConnect.addListener(function(port) {
+    if (port.name === 'webPort') {
+      port.onMessage.addListener(function(msg) {
+        if (msg.type === 'trace') {
+          //console.log("TRACE: ", msg);
+          if (traceQueue.length < queueLength) {
+            throttleQueue(msg);
+          }
+        }
+      })
+    }          
+  });
+
+  //Trace throttle
+  var traceQueue = [],
+      queueLength = 50,
+      busy = false,
+      waitTime = 100, //milliseconds between fireing
+      visPort = chrome.runtime.connect({name: "filteredTrace"});
+
+  function throttleQueue (msg) {
+    if (traceQueue.length < queueLength) {
+      traceQueue.push(msg);
+      
+      if (!busy) {
+        busy = true;
+        startTimer(traceQueue);
+      }
+    }
+  }
+
+  function startTimer (traceQueue) {
+    setTimeout(function() {
+      console.log("sending message to VIS");
+      visPort.postMessage({type: "trace2", data: traceQueue.shift().data});
+      if (traceQueue.length > 0) {
+        startTimer(traceQueue);
+      } else {
+        busy = false;
+      }
+    }, waitTime);
+  }
+}
+
+

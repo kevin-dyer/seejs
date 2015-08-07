@@ -114,7 +114,7 @@
   }
 
   window.addEventListener("message", function(event) {
-    var port = chrome.runtime.connect({name: "traceport"});;
+    var port = chrome.runtime.connect({name: "webPort"});
     // only accept messages from ourselves
     if (event.source != window)
       return;
