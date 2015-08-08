@@ -69,5 +69,6 @@ div#info {
     display:inline-block;
     width: 570px;
     height: 750px;
+    float:right;   
     /*display: none;*/
 }
