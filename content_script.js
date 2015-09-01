@@ -113,15 +113,55 @@
     }
   }
 
+
+
+  //TODO: move to separate content script that is injected when the throttle button is clicked
+  //Trace throttle
+  var traceQueue = [],
+      queueLength = 50,
+      busy = false,
+      waitTime = 100, //milliseconds between fireing
+      //visPort = chrome.runtime.connect({name: "filteredTrace"});
+      port = chrome.runtime.connect({name: "webPort"});
+
+  function throttleQueue (msg) {
+    if (traceQueue.length < queueLength) {
+      traceQueue.push(msg);
+      
+      if (!busy) {
+        busy = true;
+        startTimer(traceQueue);
+      }
+    }
+  }
+
+  function startTimer (traceQueue) {
+    setTimeout(function() {
+      console.log("sending message to VIS");
+      port.postMessage({type: "trace", data: traceQueue.shift().data});
+      if (traceQueue.length > 0) {
+        startTimer(traceQueue);
+      } else {
+        busy = false;
+      }
+    }, waitTime);
+  }
+
   window.addEventListener("message", function(event) {
-    var port = chrome.runtime.connect({name: "webPort"});
+    //var port = chrome.runtime.connect({name: "webPort"});
     // only accept messages from ourselves
     if (event.source != window)
       return;
 
     if (event.data.type && (event.data.type === "TARGET_PAGE")) {
-      port.postMessage({type: "trace", data: event.data});
+
+      if (traceQueue.length < queueLength) {
+        throttleQueue(event);
+      }
+      //port.postMessage({type: "trace", data: event.data});
     }
   }, false);
+
+
 
 })(window);
