@@ -542,7 +542,7 @@ function listenToTrace () {
   console.log("adding trace listener");
 
   chrome.runtime.onConnect.addListener(receiveFilterTrace);
-  background.initTrace();
+  //background.initTrace();
 
   startTraceButton.style.display = 'none';
   stopTraceButton.style.display = 'inline-block';

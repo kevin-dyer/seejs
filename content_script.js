@@ -122,7 +122,7 @@
       busy = false,
       waitTime = 100, //milliseconds between fireing
       //visPort = chrome.runtime.connect({name: "filteredTrace"});
-      port = chrome.runtime.connect({name: "webPort"});
+      port = chrome.runtime.connect({name: "filteredTrace"});
 
   function throttleQueue (msg) {
     if (traceQueue.length < queueLength) {
@@ -137,8 +137,10 @@
 
   function startTimer (traceQueue) {
     setTimeout(function() {
-      console.log("sending message to VIS");
-      port.postMessage({type: "trace", data: traceQueue.shift().data});
+      port = chrome.runtime.connect({name: "filteredTrace"}); // TODO: redundant, but throws error without
+      //console.log("sending message to VIS");
+      //console.log("port: ", port);
+      port.postMessage({type: "trace2", data: traceQueue.shift().data});
       if (traceQueue.length > 0) {
         startTimer(traceQueue);
       } else {

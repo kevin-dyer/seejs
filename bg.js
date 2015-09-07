@@ -94,49 +94,49 @@ chrome.runtime.onMessage.addListener(
   });
 
 // //tracer listener
-var initTrace = function () {
-  chrome.runtime.onConnect.addListener(function(port) {
-    if (port.name === 'webPort') {
-      port.onMessage.addListener(function(msg) {
-        if (msg.type === 'trace') {
-          //console.log("TRACE: ", msg);
-          if (traceQueue.length < queueLength) {
-            throttleQueue(msg);
-          }
-        }
-      })
-    }          
-  });
+// var initTrace = function () {
+//   chrome.runtime.onConnect.addListener(function(port) {
+//     if (port.name === 'webPort') {
+//       port.onMessage.addListener(function(msg) {
+//         if (msg.type === 'trace') {
+//           //console.log("TRACE: ", msg);
+//           if (traceQueue.length < queueLength) {
+//             throttleQueue(msg);
+//           }
+//         }
+//       })
+//     }          
+//   });
 
-  //Trace throttle
-  var traceQueue = [],
-      queueLength = 50,
-      busy = false,
-      waitTime = 100, //milliseconds between fireing
-      visPort = chrome.runtime.connect({name: "filteredTrace"});
+//   //Trace throttle
+//   var traceQueue = [],
+//       queueLength = 50,
+//       busy = false,
+//       waitTime = 100, //milliseconds between fireing
+//       visPort = chrome.runtime.connect({name: "filteredTrace"});
 
-  function throttleQueue (msg) {
-    if (traceQueue.length < queueLength) {
-      traceQueue.push(msg);
+//   function throttleQueue (msg) {
+//     if (traceQueue.length < queueLength) {
+//       traceQueue.push(msg);
       
-      if (!busy) {
-        busy = true;
-        startTimer(traceQueue);
-      }
-    }
-  }
+//       if (!busy) {
+//         busy = true;
+//         startTimer(traceQueue);
+//       }
+//     }
+//   }
 
-  function startTimer (traceQueue) {
-    setTimeout(function() {
-      console.log("sending message to VIS");
-      visPort.postMessage({type: "trace2", data: traceQueue.shift().data});
-      if (traceQueue.length > 0) {
-        startTimer(traceQueue);
-      } else {
-        busy = false;
-      }
-    }, waitTime);
-  }
-}
+//   function startTimer (traceQueue) {
+//     setTimeout(function() {
+//       console.log("sending message to VIS");
+//       visPort.postMessage({type: "trace2", data: traceQueue.shift().data});
+//       if (traceQueue.length > 0) {
+//         startTimer(traceQueue);
+//       } else {
+//         busy = false;
+//       }
+//     }, waitTime);
+//   }
+// }
 
 
