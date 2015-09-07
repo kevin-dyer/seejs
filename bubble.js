@@ -497,7 +497,6 @@
   }
 
   function highlightActiveNode(uniqueId) {
-    console.log("hightlightActiveNode fired");
     var nodeData = vis.select('#n' + uniqueId);
 
     vis.append("svg:circle")
@@ -564,7 +563,7 @@ function receiveFilterTrace (port) {
   if (port.name === 'filteredTrace') {
     port.onMessage.addListener(function(msg) {
       if (msg.type === 'trace2') {
-        console.log("TRACE2: ", msg);
+        //console.log("TRACE2: ", msg);
         bubble.highlightActiveNode(msg.data.uniqueId);
       }
     })
