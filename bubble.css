@@ -1,10 +1,10 @@
 text {
   font-size: 11px;
   pointer-events: none;
+  fill: #FFFFFF;
 }
 
 text.parent {
-  fill: #1f77b4;
 }
 
 circle {
@@ -14,14 +14,10 @@ circle {
 }
 
 circle.parent {
-  /*fill: #1f77b4;*/
-  /*fill-opacity: .2;*/
-  /*stroke: steelblue;*/
 }
 
 circle.parent:hover {
-  /*stroke: #ff7f0e;
-  stroke-width: .5px;*/
+
 }
 
 .link {
@@ -31,11 +27,13 @@ circle.parent:hover {
 svg.bubble-chart {
   display: inline-block;
   float:left;
+  /*background-color: #000;*/
 }
 
 circle.highlighted {
   fill: #ffcf40;
   opacity: 0.8;
+  pointer-events:none;
 }
 
 

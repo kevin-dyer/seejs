@@ -168,7 +168,8 @@
 
             //convert myChildren to children
             parent.children = parent.myChildren;
-            parent.size = parent.dependencies.length * 2 + 1;
+            //parent.size = parent.dependencies.length * 2 + 1;
+            parent.size = parent.sourceCode ? (parent.sourceCode.length * 2 + 1) : 1;
             delete parent.myChildren;
 
             childLength = parent.children.length;

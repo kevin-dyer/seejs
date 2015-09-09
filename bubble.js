@@ -31,7 +31,14 @@
   var pack = d3.layout.pack()
         .sort(null)
         .size([r, r])
-        .value(function(d) { return d.size; });
+        .padding(2)
+        .value(function(d) { 
+          if (d.range) {
+            return d.range[1] - d.range[0];
+          } else {
+            return 1;
+          }
+        });
 
   var vis = d3.select("svg.bubble-chart")
         .attr("width", w)
@@ -43,7 +50,11 @@
   var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
   vis.call(tip);
 
+
+
   function update(rootNode) {
+
+    console.log("rootNode: ", rootNode);
     var nodes = pack.nodes(rootNode),
         editor = ace.edit("editor");
 
@@ -64,9 +75,6 @@
 
     circles
       .style("stroke", getBorderColor)
-      .style("fill", getFillColor)
-      .style("stroke-width", getBorderWidth)
-      .style("opacity", getOpacity)
       .transition()
         .duration(750)
         .attr("cx", function(d) {return d.x})
@@ -83,7 +91,7 @@
       .attr("r", function(d) { return d.r; })
       .style("stroke", getBorderColor)
       .style("fill", getFillColor)
-      .style("stroke-width", getBorderWidth)
+      .style("stroke-width", 1)
       .style("opacity", getOpacity)
       .on("click", onCircleClick)
       .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
@@ -105,12 +113,12 @@
   function onCircleClick (d, i) {
     //clean up old selection:
     d3.select(".selected").style("stroke", getBorderColor)
-      .style("stroke-width", getBorderWidth)
+      //.style("stroke-width", getBorderWidth)
       .classed("selected", false);
 
     //highlight new selection (clicked circle)
     d3.select(this).style("stroke", selfBorderColor)
-      .style("stroke-width", 4)
+      //.style("stroke-width", 4)
       .classed("selected", true);
 
     toggleDependencies(d, i);
@@ -127,11 +135,11 @@
         });
 
     labels.attr("class", getClass)
-      .style("text-shadow", getTextShadow)
+      //.style("text-shadow", getTextShadow)
       .style("opacity", 1e-6)
-      .style("fill", getTextFill)
-      .style("font-size", getFontSize)
-      .style("font-weight", getFontWeight)
+      .style("fill", "#FFF")
+      .style("font-size", 11)
+      .style("font-weight", 400)
       .text(getLabelText)
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
@@ -146,10 +154,9 @@
       .attr("y", function(d) { return d.y; })
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
-      .style("text-shadow", getTextShadow)
-      .style("fill", getTextFill)
-      .style("font-size", getFontSize)
-      .style("font-weight", getFontWeight)
+      .style("fill", '#FFF')
+      .style("font-size", 11)
+      .style("font-weight", 400)
       .style("opacity", 1e-6)
       .text(getLabelText)
       .transition()
@@ -247,11 +254,11 @@
         })
         .style("fill", function (d,i) {
           return getFillColor(d,i,thisD);
-        })
-        .style("stroke-width", getBorderWidth)
-        .style("opacity", function(d) {
-          return getOpacity(d, thisD);
-        })
+        });
+        //.style("stroke-width", getBorderWidth)
+        // .style("opacity", function(d) {
+        //   return getOpacity(d, thisD);
+        // })
   }
 
   function showDependencyPaths (d) {
@@ -301,10 +308,10 @@
 
     labels.style("fill", function (d) {
       return getTextFill(d, thisD);
-    })
-      .style("text-shadow", function (d) {
-        return getTextShadow(d, thisD)
-      });
+    });
+      // .style("text-shadow", function (d) {
+      //   return getTextShadow(d, thisD)
+      // });
   }
 
   function getTextFill(d, thisD) {
@@ -316,14 +323,6 @@
       return "#FFFFFF";
     } else {
       return "#1f77b4";
-    }
-  }
-
-  function getTextShadow (d, thisD) {
-    if (thisD && thisD.dependencies && thisD.dependencies.indexOf(d) >= 0) {
-      return;
-    } else if (d.children && d.children.length) {
-      return "0 0 5px #FFFFFF";
     }
   }
 
@@ -409,37 +408,60 @@
   }
 
   function getBorderColor (d, i, thisD) {
-    if (thisD && thisD.dependencies.indexOf(d) >= 0) {
-      return depBorderColor;
+    if (d.name === '[Anonymous]' && d.parent.type === 'file') {
+      return;
     } else if (d.name === '[Anonymous]') {
       return anonymousBorderColor;
     } else if (d.name  === 'root') {
       return backgroundColor;
     } else if (d.type === 'file' || d.type === 'inlineScript') {
-      return fileBorderColor;
-    } else if (d.dependencies.length === 0) {
-      return noDepBorderColor;
+      return backgroundColor;
+    } else if (d.type ==='hidden') {
+      return backgroundColor;
+    // } else if (d.dependencies.length === 0) {
+    //   return noDepBorderColor;
     }else {
-      return defaultBorderColor;
+      //return defaultBorderColor;
+      return getFillColor(d);
     }
   }
 
+  var fillColor = d3.scale.category10();
+
   function getFillColor (d, i, thisD) {
-    if (thisD && thisD.dependencies.indexOf(d) >= 0) {
-      return depFillColor;
-    } else if (d.name === '[Anonymous]') {
-      return anonymousFillColor;
-    } else if (d.name === 'root') {
+
+    //ROOT
+    if (!d.parent || d.parent === null) {
       return backgroundColor;
-    } else if (d.type === 'file' || d.type === 'inlineScript') {
-      return fileFIllColor;
-    } else if (d.dependencies.length === 0) {
-      return noDepFillColor;
-    } else if (!d.children || d.children.length === 0) {
-      return noChildFillColor;
-    }else {
-      return defaultFillColor;
     }
+
+    //FILES
+    if (d.type === 'file') {
+      return backgroundColor;
+    }
+
+    //HIDDEN
+    if (d.type === 'hidden') {
+      return backgroundColor;
+    }
+
+    //ANONY
+    if (d.name === '[Anonymous]') {
+      return backgroundColor;
+    }
+
+    return fillColor(getParentFile(d).sourceIndex);
+  }
+
+  function getParentFile (d) {
+    var temp = d;
+    while(temp.parent) {
+      if (temp.type === 'file') {
+        return temp;
+      }
+      temp = temp.parent;
+    }
+    return null;
   }
 
   function getOpacity(d, thisD) {
@@ -448,12 +470,6 @@
     } else if (d.type === 'file' || d.type === 'inlineScript') {
       return 1;
     } else if (d.name === '[Anonymous]') {
-      return 1;
-    } else if (!d.dependencies || !d.dependencies.length) {
-      return 1;
-    } else if (thisD && thisD.dependencies && thisD.dependencies.map(function(dep){return dep.uniqueId;}).indexOf(d.uniqueId) > -1) {
-       return 1;
-    } else if (!d.children || !d.children.length) {
       return 1;
     } else {
       return 0.4;

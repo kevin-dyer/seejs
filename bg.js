@@ -69,8 +69,11 @@ chrome.runtime.onMessage.addListener(
       console.log("setting scopedList: ");
       codeTree = tracer.setScopedList(codeTree);
 
-      console.log("setting dependencies");
-      codeTree = tracer.setFunctionTreeDependencies(codeTree);
+      // TODO: set dependencies on request in button in popup ui
+      //       should turn icon red while its working
+      //
+      //console.log("setting dependencies");
+      //codeTree = tracer.setFunctionTreeDependencies(codeTree);
 
       console.log("Adding hidden children: ");
       codeTree = tracer.addHiddenChildren(codeTree);
