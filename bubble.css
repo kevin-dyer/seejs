@@ -20,6 +20,10 @@ circle.parent:hover {
 
 }
 
+circle:hover {
+  opacity: 1;
+}
+
 .link {
   pointer-events:none;
 }

@@ -50,7 +50,12 @@
   var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
   vis.call(tip);
 
-
+  var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([1, 8])
+    .on("zoom", zoomed);
+  vis.call(zoom);
 
   function update(rootNode) {
 
@@ -99,9 +104,18 @@
         if (d.name !== 'root' && d.type !== 'hidden') {
           tip.show(d);
         }
+        if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
+          //show border of hidden anonymous circles (maybe including files)
+          d3.select(this).style("opacity", 1);
+        }
       })
       .on('mouseout', function (d) {
         tip.hide();
+
+        if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
+          //show border of hidden anonymous circles (maybe including files)
+          d3.select(this).style("opacity", 1e-6);
+        }
       });
 
     circles.exit()
@@ -152,10 +166,22 @@
       .attr("class", getClass)
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
-      .attr("dy", ".35em")
+      .attr("dy", function (d) {
+        if (d.type === 'file') {
+          return -1 * d.r + 15;
+        } else {
+          return ".35em";
+        }
+      })
       .attr("text-anchor", "middle")
-      .style("fill", '#FFF')
-      .style("font-size", 11)
+      .style("fill", '#000')
+      .style("font-size", function (d) {
+        if (d.type === 'file') {
+          return 20;
+        } else {
+          return 11;
+        }
+      })
       .style("font-weight", 400)
       .style("opacity", 1e-6)
       .text(getLabelText)
@@ -210,6 +236,15 @@
     }
 
     return text;
+  }
+
+  function zoomed() {
+    vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    vis.selectAll("circle").style("stroke-width", 1.5 / d3.event.scale + "px");
+    vis.selectAll("text").style("font-size", 22 / d3.event.scale + "px");
+    vis.selectAll(".link").style("stroke-width", .5 / d3.event.scale + "px");
+
+    //console.log("vis.selectAll text: ", vis.selectAll("text")[0].length);
   }
 
   function getFontSize (d) {
@@ -363,29 +398,29 @@
     return line(points);
   }
 
-  function zoom(d, i) {
-    var k = r / d.r / 2,
-        t;
+  // function zoom(d, i) {
+  //   var k = r / d.r / 2,
+  //       t;
 
-    x.domain([d.x - d.r, d.x + d.r]);
-    y.domain([d.y - d.r, d.y + d.r]);
+  //   x.domain([d.x - d.r, d.x + d.r]);
+  //   y.domain([d.y - d.r, d.y + d.r]);
 
-    t = vis.transition()
-        .duration(d3.event.altKey ? 7500 : 750);
+  //   t = vis.transition()
+  //       .duration(d3.event.altKey ? 7500 : 750);
 
-    t.selectAll("circle")
-        .attr("cx", function(d) { return x(d.x); })
-        .attr("cy", function(d) { return y(d.y); })
-        .attr("r", function(d) { return k * d.r; });
+  //   t.selectAll("circle")
+  //       .attr("cx", function(d) { return x(d.x); })
+  //       .attr("cy", function(d) { return y(d.y); })
+  //       .attr("r", function(d) { return k * d.r; });
 
-    t.selectAll("text")
-        .attr("x", function(d) { return x(d.x); })
-        .attr("y", function(d) { return y(d.y); })
-        .style("opacity", function(d) { return k * d.r > 20 ? 1 : 0; });
+  //   t.selectAll("text")
+  //       .attr("x", function(d) { return x(d.x); })
+  //       .attr("y", function(d) { return y(d.y); })
+  //       .style("opacity", function(d) { return k * d.r > 20 ? 1 : 0; });
 
-    node = d;
-    d3.event.stopPropagation();
-  }
+  //   node = d;
+  //   d3.event.stopPropagation();
+  // }
 
 
 
@@ -407,9 +442,11 @@
     update(root);
   }
 
+  //this is where i hide the files and anonymous circles
+  // TODO: should hide them by making them opac, with a background color fill color and a golden border color
   function getBorderColor (d, i, thisD) {
     if (d.name === '[Anonymous]' && d.parent.type === 'file') {
-      return;
+      return anonymousBorderColor;
     } else if (d.name === '[Anonymous]') {
       return anonymousBorderColor;
     } else if (d.name  === 'root') {
@@ -418,10 +455,7 @@
       return backgroundColor;
     } else if (d.type ==='hidden') {
       return backgroundColor;
-    // } else if (d.dependencies.length === 0) {
-    //   return noDepBorderColor;
     }else {
-      //return defaultBorderColor;
       return getFillColor(d);
     }
   }
@@ -468,7 +502,9 @@
     if (d.type === 'hidden' || d.name === 'root') {
       return 1e-6;
     } else if (d.type === 'file' || d.type === 'inlineScript') {
-      return 1;
+      return 1e-6;
+    } if (d.name === '[Anonymous]' && d.parent.type === 'file') {
+      return 1e-6;
     } else if (d.name === '[Anonymous]') {
       return 1;
     } else {
