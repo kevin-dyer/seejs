@@ -5,6 +5,7 @@
         x = d3.scale.linear().range([0, r]),
         y = d3.scale.linear().range([0, r]),
         node,
+        zoomScale = 1,
 
         //brewer color solid color scale
         colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
@@ -53,8 +54,10 @@
   var zoom = d3.behavior.zoom()
     .translate([0, 0])
     .scale(1)
-    .scaleExtent([1, 8])
-    .on("zoom", zoomed);
+    .center(null)
+    .scaleExtent([1, 12])
+    .on("zoom", zoomed)
+    .on("zoomend", zoomEnded);
   vis.call(zoom);
 
   function update(rootNode) {
@@ -143,17 +146,11 @@
   function updateLabels (nodes) {
     var labels;
 
-    labels = vis.selectAll("text")
-        .data(nodes, function (d) {
-          return d.uniqueId;
-        });
-
+    labels = vis.selectAll("text").data(nodes, function (d) {
+        return d.uniqueId;
+      });
+    
     labels.attr("class", getClass)
-      //.style("text-shadow", getTextShadow)
-      .style("opacity", 1e-6)
-      .style("fill", "#FFF")
-      .style("font-size", 11)
-      .style("font-weight", 400)
       .text(getLabelText)
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
@@ -166,13 +163,7 @@
       .attr("class", getClass)
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
-      .attr("dy", function (d) {
-        if (d.type === 'file') {
-          return -1 * d.r + 15;
-        } else {
-          return ".35em";
-        }
-      })
+      .attr("dy", getLabelVerticalOffset)
       .attr("text-anchor", "middle")
       .style("fill", '#000')
       .style("font-size", function (d) {
@@ -182,7 +173,7 @@
           return 11;
         }
       })
-      .style("font-weight", 400)
+      //.style("font-weight", 400)
       .style("opacity", 1e-6)
       .text(getLabelText)
       .transition()
@@ -200,14 +191,14 @@
   }
 
   function getLabelOpacity (d) {
-    var textOpacityScale = d3.scale.sqrt()
-          .domain([20, r])
-          .range([1, 0.1])
-
+    // var textOpacityScale = d3.scale.sqrt()
+    //       .domain([20, r])
+    //       .range([1, 0.1])
     if (d.r < 15 || d.name === '[Anonymous]' || d.name === 'root') {
       return 1e-6;
     } else {
-      return textOpacityScale(d.r);
+      //textOpacityScale(d.r);
+      return 1;
     }
   }
 
@@ -238,13 +229,50 @@
     return text;
   }
 
+  function getLabelVerticalOffset (d, zoomScale) {
+    zoomScale = zoomScale || 1;
+
+    if (d.type === 'file') {
+      return -1 * d.r / zoomScale + 15;
+    } else {
+      return (0.35 / zoomScale) + "em";
+    }
+  }
+
   function zoomed() {
     vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
     vis.selectAll("circle").style("stroke-width", 1.5 / d3.event.scale + "px");
-    vis.selectAll("text").style("font-size", 22 / d3.event.scale + "px");
-    vis.selectAll(".link").style("stroke-width", .5 / d3.event.scale + "px");
+    zoomScale = d3.event.scale;
+    // vis.selectAll("text").style("font-size", 22 / d3.event.scale + "px");
+    //vis.selectAll(".link").style("stroke-width", .5 / d3.event.scale + "px");
 
     //console.log("vis.selectAll text: ", vis.selectAll("text")[0].length);
+  }
+
+  var zoomScale;
+  
+  function zoomEnded () {
+    console.log("zoomEnded, zoomScale: ", zoomScale);
+    //updateLabels();
+    var t = 0;
+    vis.selectAll("text").style("opacity", function (d) {
+      //debugger
+      if (t++ === 0) {
+        console.log("d.r: ", d.r);
+      }
+      
+      if (d.r * zoomScale > 15) {
+        console.log("returning 1");
+        return 1;
+      } else {
+        return 1e-6;
+      }
+    })
+    .style("font-size", 22 / zoomScale + "px");
+
+    //TODO: scale text y offset with zoom
+
+    pack.padding(2 / zoomScale);
   }
 
   function getFontSize (d) {
@@ -437,7 +465,7 @@
       editor.setValue('var instructions = "Click on a function to see its source code.";');
     });
 
-    node = root; //for zoom
+    //node = root; //for zoom
 
     update(root);
   }
