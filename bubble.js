@@ -6,6 +6,7 @@
         y = d3.scale.linear().range([0, r]),
         node,
         zoomScale = 1,
+        myRootNode,
 
         //brewer color solid color scale
         colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
@@ -53,7 +54,6 @@
 
   var zoom = d3.behavior.zoom()
     .translate([0, 0])
-    .scale(1)
     .center(null)
     .scaleExtent([1, 12])
     .on("zoom", zoomed)
@@ -102,7 +102,7 @@
       .style("stroke-width", 1)
       .style("opacity", getOpacity)
       .on("click", onCircleClick)
-      .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
+      //.on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', function(d) {
         if (d.name !== 'root' && d.type !== 'hidden') {
           tip.show(d);
@@ -174,12 +174,13 @@
         }
       })
       //.style("font-weight", 400)
-      .style("opacity", 1e-6)
-      .text(getLabelText)
-      .transition()
-        .delay(500)
-        .duration(750)
-        .style("opacity", getLabelOpacity);
+      //.style("opacity", 1e-6)
+      .style("opacity", getLabelOpacity)
+      .text(getLabelText);
+      // .transition()
+      //   .delay(500)
+      //   .duration(750)
+      //   .style("opacity", getLabelOpacity);
 
     labels.exit()
       .transition()
@@ -202,6 +203,7 @@
     }
   }
 
+  //TODO: make simpler
   function getLabelText (d) {
     var text = d.name,
         textLength = text.length,
@@ -256,13 +258,7 @@
     //updateLabels();
     var t = 0;
     vis.selectAll("text").style("opacity", function (d) {
-      //debugger
-      if (t++ === 0) {
-        console.log("d.r: ", d.r);
-      }
-      
       if (d.r * zoomScale > 15) {
-        console.log("returning 1");
         return 1;
       } else {
         return 1e-6;
@@ -272,7 +268,8 @@
 
     //TODO: scale text y offset with zoom
 
-    pack.padding(2 / zoomScale);
+    // pack.padding(2 / zoomScale);
+    // update(myRootNode);
   }
 
   function getFontSize (d) {
@@ -328,7 +325,7 @@
     var links = [],
         paths;
 
-    if (d.dependencies.length === 0) {
+    if (!d.dependencies || d.dependencies.length === 0) {
       return;
     }
 
@@ -453,17 +450,18 @@
 
 
   function makeBubbleChart (root)  {
+    myRootNode = root;
 
-    d3.select('.bubble-chart').on("click", function() {
-      var editor = ace.edit("editor")
+    // d3.select('.bubble-chart').on("click", function() {
+    //   var editor = ace.edit("editor")
 
-      while(root.parent){
-        root = root.parent;
-      }
-      update(root);
+    //   while(root.parent){
+    //     root = root.parent;
+    //   }
+    //   update(root);
 
-      editor.setValue('var instructions = "Click on a function to see its source code.";');
-    });
+    //   editor.setValue('var instructions = "Click on a function to see its source code.";');
+    // });
 
     //node = root; //for zoom
 
