@@ -42,24 +42,26 @@
           }
         });
 
-  var vis = d3.select("svg.bubble-chart")
-        .attr("width", w)
-        .attr("height", h)
-        .append("svg:g")
-        .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
-
-  /* Initialize tooltip */
-  var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
-  vis.call(tip);
-
   var zoom = d3.behavior.zoom()
     .translate([0, 0])
     .center(null)
     .scaleExtent([1, 12])
+    .size([w, h])
     .on("zoom", zoomed)
     .on("zoomend", zoomEnded);
-  vis.call(zoom);
 
+  var vis = d3.select("svg.bubble-chart")
+        .attr("width", w)
+        .attr("height", h)
+        .call(zoom)
+        .append("svg:g")
+        .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
+
+  /* Initialize tooltip */
+  // var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
+  // vis.call(tip);
+
+  
   function update(rootNode) {
 
     console.log("rootNode: ", rootNode);
@@ -102,10 +104,10 @@
       .style("stroke-width", 1)
       .style("opacity", getOpacity)
       .on("click", onCircleClick)
-      //.on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
+      .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', function(d) {
         if (d.name !== 'root' && d.type !== 'hidden') {
-          tip.show(d);
+          //tip.show(d);
         }
         if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
           //show border of hidden anonymous circles (maybe including files)
@@ -113,7 +115,7 @@
         }
       })
       .on('mouseout', function (d) {
-        tip.hide();
+        //tip.hide();
 
         if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
           //show border of hidden anonymous circles (maybe including files)
@@ -243,8 +245,9 @@
 
   function zoomed() {
     vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    vis.selectAll("circle").style("stroke-width", 1.5 / d3.event.scale + "px");
-    zoomScale = d3.event.scale;
+    //vis.selectAll("circle").style("stroke-width", 1.5 / d3.event.scale + "px");
+    zoomScale = d3.event.scale; //replace with zoom.scale()
+
     // vis.selectAll("text").style("font-size", 22 / d3.event.scale + "px");
     //vis.selectAll(".link").style("stroke-width", .5 / d3.event.scale + "px");
 
@@ -255,6 +258,7 @@
   
   function zoomEnded () {
     console.log("zoomEnded, zoomScale: ", zoomScale);
+    console.log("zoom.scale()", zoom.scale());
     //updateLabels();
     var t = 0;
     vis.selectAll("text").style("opacity", function (d) {
