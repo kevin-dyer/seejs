@@ -5,8 +5,10 @@
         x = d3.scale.linear().range([0, r]),
         y = d3.scale.linear().range([0, r]),
         node,
-        zoomScale = 1,
-        myRootNode,
+
+        fontScale = d3.scale.linear()
+              .domain([1, r])
+              .range([6, 18]),
 
         //brewer color solid color scale
         colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
@@ -58,13 +60,13 @@
         .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
 
   /* Initialize tooltip */
-  // var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
-  // vis.call(tip);
+  var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
+  vis.call(tip);
 
   
   function update(rootNode) {
 
-    console.log("rootNode: ", rootNode);
+    console.log("update rootNode: ", rootNode);
     var nodes = pack.nodes(rootNode),
         editor = ace.edit("editor");
 
@@ -101,48 +103,35 @@
       .attr("r", function(d) { return d.r; })
       .style("stroke", getBorderColor)
       .style("fill", getFillColor)
-      .style("stroke-width", 1)
+      .style("stroke-width", getBorderWidth)
       .style("opacity", getOpacity)
       .on("click", onCircleClick)
-      .on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
+      //.on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', function(d) {
         if (d.name !== 'root' && d.type !== 'hidden') {
-          //tip.show(d);
+          tip.show(d);
         }
         if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
-          //show border of hidden anonymous circles (maybe including files)
+          //show/hide border of hidden anonymous circles (maybe including files)
           d3.select(this).style("opacity", 1);
         }
       })
       .on('mouseout', function (d) {
-        //tip.hide();
+        tip.hide();
 
         if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
-          //show border of hidden anonymous circles (maybe including files)
+          //show/hide border of hidden anonymous circles (maybe including files)
           d3.select(this).style("opacity", 1e-6);
         }
       });
 
     circles.exit()
-      .remove();
+      .transition()
+        .duration(750)
+        .attr("r", function(d) { return 1e-6; })
+        .remove();
 
     circles.order();
-  }
-
-  function onCircleClick (d, i) {
-    //clean up old selection:
-    d3.select(".selected").style("stroke", getBorderColor)
-      //.style("stroke-width", getBorderWidth)
-      .classed("selected", false);
-
-    //highlight new selection (clicked circle)
-    d3.select(this).style("stroke", selfBorderColor)
-      //.style("stroke-width", 4)
-      .classed("selected", true);
-
-    toggleDependencies(d, i);
-
-    d3.event.stopPropagation();
   }
 
   function updateLabels (nodes) {
@@ -157,7 +146,6 @@
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
       .transition()
-        .delay(500)
         .duration(500)
         .style("opacity", getLabelOpacity);
       
@@ -168,21 +156,13 @@
       .attr("dy", getLabelVerticalOffset)
       .attr("text-anchor", "middle")
       .style("fill", '#000')
-      .style("font-size", function (d) {
-        if (d.type === 'file') {
-          return 20;
-        } else {
-          return 11;
-        }
-      })
-      //.style("font-weight", 400)
-      //.style("opacity", 1e-6)
-      .style("opacity", getLabelOpacity)
-      .text(getLabelText);
-      // .transition()
-      //   .delay(500)
-      //   .duration(750)
-      //   .style("opacity", getLabelOpacity);
+      .style("font-size", getFontSize)
+      .style("opacity", 1e-6)
+      .text(getLabelText)
+      .transition()
+        .duration(500)
+        .style("opacity", getLabelOpacity);
+      
 
     labels.exit()
       .transition()
@@ -193,14 +173,26 @@
     labels.order();
   }
 
+  function onCircleClick (d, i) {
+    //clean up old selection:
+    d3.select(".selected").style("stroke", getBorderColor)
+      .classed("selected", false);
+
+    //highlight new selection (clicked circle)
+    d3.select(this).style("stroke", selfBorderColor)
+      .classed("selected", true);
+    
+    //TODO: add back in
+    //toggleDependencies(d, i);
+
+    d3.event.stopPropagation();
+  }
+
+
   function getLabelOpacity (d) {
-    // var textOpacityScale = d3.scale.sqrt()
-    //       .domain([20, r])
-    //       .range([1, 0.1])
-    if (d.r < 15 || d.name === '[Anonymous]' || d.name === 'root') {
+    if (d.r * zoom.scale() < 15 || d.name === '[Anonymous]' || d.name === 'root') {
       return 1e-6;
     } else {
-      //textOpacityScale(d.r);
       return 1;
     }
   }
@@ -212,13 +204,14 @@
         textSplit,
         letterWidth = getFontSize(d),
         circlePadding = 3,
-        minTextLength = 3;
+        minTextLength = 3,
+        zoomScale = zoom.scale();
 
     if (d.name === '[Anonymous]' || d.name === 'root') {
       return '';
     }
     
-    if (textLength * letterWidth > (d.r * 2)) {
+    if (textLength * letterWidth > (d.r * 2 * zoomScale)) {
       if (d.type === 'file') {
         text = UTILS.getBaseFileName(d);
       } else {
@@ -226,18 +219,14 @@
       }
     }
 
-    while ((text.length * letterWidth > d.r * circlePadding) && (text.length > minTextLength)) {
-      text = text.slice(0, -1);
-    }
-
-    return text;
+    return text.slice(0, parseInt(d.r * 2 * zoomScale / letterWidth));
   }
 
   function getLabelVerticalOffset (d, zoomScale) {
-    zoomScale = zoomScale || 1;
+    zoomScale = zoom.scale();
 
     if (d.type === 'file') {
-      return -1 * d.r / zoomScale + 15;
+      return -1 * d.r + 15 * zoomScale;
     } else {
       return (0.35 / zoomScale) + "em";
     }
@@ -245,51 +234,43 @@
 
   function zoomed() {
     vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    //vis.selectAll("circle").style("stroke-width", 1.5 / d3.event.scale + "px");
-    zoomScale = d3.event.scale; //replace with zoom.scale()
-
-    // vis.selectAll("text").style("font-size", 22 / d3.event.scale + "px");
-    //vis.selectAll(".link").style("stroke-width", .5 / d3.event.scale + "px");
-
-    //console.log("vis.selectAll text: ", vis.selectAll("text")[0].length);
   }
 
-  var zoomScale;
+  //var zoomScale;
+  var oldZoomScale = 1;
   
   function zoomEnded () {
-    console.log("zoomEnded, zoomScale: ", zoomScale);
-    console.log("zoom.scale()", zoom.scale());
-    //updateLabels();
-    var t = 0;
-    vis.selectAll("text").style("opacity", function (d) {
-      if (d.r * zoomScale > 15) {
-        return 1;
-      } else {
-        return 1e-6;
-      }
-    })
-    .style("font-size", 22 / zoomScale + "px");
+    var zoomScale = zoom.scale();
 
-    //TODO: scale text y offset with zoom
+    if (zoomScale === oldZoomScale) {
+      return;
+    }
 
-    // pack.padding(2 / zoomScale);
-    // update(myRootNode);
+    var circles = vis.selectAll("circle")
+          .style("stroke-width", getBorderWidth);
+
+    var labels = vis.selectAll("text")
+          .style("opacity", getLabelOpacity)
+          .attr("dy", getLabelVerticalOffset)
+          .style("font-size", getFontSize)
+          .text(getLabelText);
+
+    oldZoomScale = zoomScale;
   }
 
   function getFontSize (d) {
-    var fontScale = d3.scale.sqrt()
-      .domain([20, r])
-      .range([14, 50]);
+    var zoomScale = zoom.scale(),
+        fontSize;
 
-    return fontScale(d.r);
-  }
-
-  function getFontWeight (d) {
-    if (d.r > 75) {
-      return 800;
+    if (d.type === 'file') {
+      fontSize = 20;
     } else {
-      return 400;
+      //fontSize = fontScale(d.r);
+      //console.log("fontSize: ", fontSize);
+      fontSize = 11;
     }
+
+    return fontSize / zoomScale;
   }
 
   function removePaths () {
@@ -297,33 +278,11 @@
   }
 
   function toggleDependencies (d, i) {
-    //zoom(node == d ? root : d);
-    circleClickAction(d, i);
     showDependencyPaths(d);
     updateDependencyText(d, i);
     setEditorContents(d);
   }
 
-  function circleClickAction (d, i) {
-    var circles = vis.selectAll("circle:not(.selected)"),
-        thisD = d,
-        thisI = i;
-
-    circles
-      .transition()
-        .delay(500)
-        .duration(500)
-        .style("stroke", function(d,i) {
-          return getBorderColor(d,i,thisD);
-        })
-        .style("fill", function (d,i) {
-          return getFillColor(d,i,thisD);
-        });
-        //.style("stroke-width", getBorderWidth)
-        // .style("opacity", function(d) {
-        //   return getOpacity(d, thisD);
-        // })
-  }
 
   function showDependencyPaths (d) {
     var links = [],
@@ -533,7 +492,7 @@
       return 1e-6;
     } else if (d.type === 'file' || d.type === 'inlineScript') {
       return 1e-6;
-    } if (d.name === '[Anonymous]' && d.parent.type === 'file') {
+    } if (d.name === '[Anonymous]' && d.parent.type === 'file' && (!d.children || !d.children.length)) {
       return 1e-6;
     } else if (d.name === '[Anonymous]') {
       return 1;
@@ -543,13 +502,17 @@
   }
 
   function getBorderWidth(d) {
-    if (d.type === 'file' || d.type === 'inlineScript') {
-      return 5;
-    } else if (d.name === '[Anonymous]') {
-      return 0.5;
-    } else {
-      return 1.5;
-    }
+    var zoomScale = zoom.scale();
+
+    // if (d.type === 'file' || d.type === 'inlineScript') {
+    //   return 5;
+    // } else if (d.name === '[Anonymous]') {
+    //   return 0.5;
+    // } else {
+    //   return 1.5;
+    // }
+
+    return 1.5 / zoomScale;
   }
 
   function getToolTipText (d) {
