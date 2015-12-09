@@ -1,0 +1,9 @@
+#editor {
+    margin: 0;
+    position: relative;
+    display:inline-block;
+    width: 570px;
+    height: 750px;
+    float:right;   
+    /*display: none;*/
+}

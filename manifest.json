@@ -3,8 +3,8 @@
   "description": "An interactive visualization of your page's javascript code.",
   "version": "1.0",
   "browser_action": {
-    "default_icon": "blue-icon.png",
-    //"default_popup": "popup.html",
+    "default_icon": "app/images/blue-icon.png",
+    "default_popup": "app/popup.html",
     "default_title": "Build visualization"
   },
 
@@ -18,10 +18,10 @@
 
   "background": {
     "scripts": [
-      "bg.js",
-      "esprima.js",
-      "utils.js",
-      "esmorph.js"
+      "app/js/background.js",
+      "app/js/esprima.js",
+      "app/js/utils.js",
+      "app/js/esmorph.js"
     ],
     "persistent": false
   },

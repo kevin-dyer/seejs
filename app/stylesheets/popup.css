@@ -1,0 +1,142 @@
+body {
+  width: 400px;
+  /*height: 700px;*/
+  padding:1px;
+}
+
+.popup-component-content {
+  position: relative;
+}
+
+.page-header {
+  margin: 20px 20px 0 20px;
+}
+
+.file-loader-gif {
+  width: 50px;
+  height:auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.script-list-container {
+  padding-bottom: 20px;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y:scroll;
+}
+
+.script-list-container .file-list-title {
+  padding-left: 16px;
+}
+
+.script-list-container .size-title {
+  margin-right: 28px;
+}
+
+.script-list-container .script-item.list-group-item {
+  border-color: #FFFFFF;
+  border-radius: 4px;
+  padding-left: 0;
+  padding-right: 0;
+
+}
+
+.script-list-container .script-item .script-check {
+  height: 100%;
+  width: 10px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.script-list-container .script-item .script-check.bg-info {
+  background-color: #90D3F5;
+}
+.script-list-container .script-item .script-check.bg-warning {
+  background-color: #E3D58D;
+}
+
+.script-list-container .script-item .script-check.bg-danger {
+  background-color: #F29D9D;
+}
+
+.script-list-container .script-item .script-check.hover {
+  opacity: 0.2;
+}
+
+.script-list-container .script-item .script-check.invisible {
+  opacity: 0;
+}
+
+.script-list-container .script-item:hover {
+  background-color: #F5F5F5;
+}
+
+.script-list-container .script-item .script-name-container {
+  width: 100%;
+  padding-left: 30px;
+  padding-right: 60px;
+  position: relative;
+  font-size: 11px;
+}
+
+.script-list-container .script-item .script-name-container .script-name {
+  word-wrap: break-word;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.script-list-container .script-item .script-name-container .script-name.active {
+  /*word-wrap: break-word;*/
+  overflow: visible;
+  white-space: normal;
+}
+
+.script-list-container .script-item .script-name-container .script-name.text-muted {
+  color: #B0B0B0;
+}
+
+.script-list-container .script-item .script-name-container .badge {
+  position: absolute;
+  right: 22px;
+  top: 0px;
+  font-size: 10px;
+  font-weight: 400;
+  background-color: #A1A1A1;
+}
+
+.script-list-container .script-item .script-name-container .badge-unchecked {
+  background-color: #C9C9C9;
+}
+
+.script-list-container .script-item .script-name-container .badge.badge-warning {
+  background-color: #8a6d3b;
+}
+
+.script-list-container .script-item .script-name-container .badge.badge-danger {
+  background-color: #d9534f;
+}
+
+
+
+.popup-component-content .action-buttons {
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-top: 1px solid #eee;
+  position:fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+}
+
+.popup-component-content .action-buttons .action-button {
+  padding: 6px 40px;
+  margin: auto 10px;
+  text-transform: capitalize;
+}
+
+
