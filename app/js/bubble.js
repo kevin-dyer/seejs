@@ -695,6 +695,14 @@ function receiveFilterTrace (port) {
   }
 }
 
+function goToSourcePage() {
+  var tabId = background.sourcePageTab;
+  console.log("goToSourcePage: ", tabId);
+  if (tabId) {
+    chrome.tabs.update(tabId, {"selected": true});
+  }
+}
+
 
 
 
@@ -707,6 +715,7 @@ $(document).ready(function(){
     $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-small"></span> Hide Code')
       .attr('class', 'side-bar-button btn btn-lg pull-right btn-danger');
   });
+  $(".webpage-title").click(goToSourcePage);
 
   // $( "#side-bar" ).resizable({
   //     maxHeight: 600,
@@ -714,6 +723,8 @@ $(document).ready(function(){
   //     minHeight: 500,
   //     minWidth: 500
   //   });
+
+
 });
 
 var resizeDelayTimer;
