@@ -3,64 +3,18 @@
 <html>
   <head>
     <title>SeeJS</title>
-    <style>
-      body {
-        min-height:800px;
-        width: 1330px;
-        position: relative;
-      }
-
-      .webpage-title {
-        font-size: 50px;
-        font-family:arial;
-        margin:40px 0px 10px 60px;
-        display:inline-block;
-      }
-
-      .loading {
-        width: 100%;
-        margin: 100px 0;
-        text-align:center;
-        display:none;
-      }
-
-      .loading .loading-gif {
-        height: 60px;
-        width: 60px;
-        margin:40px;
-      }
-
-      .loading .loading-status {
-        font-size: 20px;
-      }
-
-      .nav-buttons {
-        float:right;
-        padding:70px 30px 0px 0;
-      }
-
-      #start-tracer, #stop-tracer, #expand-code {
-        float:left;
-        font-size: 18px;
-        cursor:pointer;
-        margin:3px;
-      }
-
-      #stop-tracer {
-        /*hide*/
-        display:none;
-      }
-
-
-    </style>
     
     <link rel="stylesheet" href="app/stylesheets/style.css">
     <link rel="stylesheet" href="app/stylesheets/bubble.css">
     <link rel="stylesheet" href="app/stylesheets/tool-tip.css">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
 
-    <script src="vendor/d3/d3.min.js"></script>
-    <script src="vendor/bower_components/d3-tip/index.js"></script>
-    <script src="vendor/ace-builds/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="node_modules/d3/d3.min.js"></script>
+    <script src="node_modules/d3-tip/index.js"></script>
+    <script src="node_modules/ace-builds/src-min/ace.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
     <script src="app/js/utils.js"></script>
     
     
@@ -68,23 +22,74 @@
   </head>
 
   <body>
-    <h1 class="webpage-title"></h1>
-    <!-- <div class="loading">
-      <img class="loading-gif" src="colored-loading.gif" />
-      <div class="loading-status">Hold Up, its loading</div>
-    </div> -->
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">SeeJS</a>
+        </div>
+        <div>
+          <ul class="nav navbar-nav">
+            <li><a href="#" class="webpage-title"></a></li> <!-- Goes back to sourcePage tab -->
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <span class="glyphicon glyphicon-menu-hamburger"></span> MENU
+              </a>
+            
+              <ul class="dropdown-menu">
+                <li><a href="#" id="start-tracer">trace</a></li>
+                <li><a href="#" id="stop-tracer">stop trace</a></li>
+                <li><a href="#" id="expand-code">unminify code</a></li>
+                <li><a href="#" id="add-dependencies">add dependencies</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">Reload</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
 
-    <div class="nav-buttons">
-      <button id="add-dependencies">Add Dependencies: TODO</button>
-      <button id="start-tracer">Trace</button>
-      <button id="stop-tracer">Stop Trace</button>
-      <button id="expand-code">Expand Code</button>
+    <div class="page-content">
+      <svg class="bubble-chart"></svg>
+
+      <!--<pre id="editor">var instructions = "Click on a function to see its source code.";</pre>-->
+      <div id="side-bar">
+        <button type="button" class="side-bar-button btn btn-lg btn-info pull-right" data-toggle="collapse" data-target="#editor">
+          <span class="glyphicon glyphicon-resize-full"></span> Show Code
+        </button>
+        <div class="clearfix"></div>
+        <div id="editor" class="collapse">Click on a function to see its source code.</div>
+      </div>
     </div>
 
-    <svg class="bubble-chart"></svg>
+      
 
-    <!--<pre id="editor">var instructions = "Click on a function to see its source code.";</pre>-->
-    <div id="editor">Click on a function to see its source code.</div>
+    
+
+    <!-- <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+      Launch demo modal
+    </button>
+
+    <div class="side-bar modal fade" data-backdrop="static" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Ace Editor</h4>
+          </div>
+          <div class="modal-body">
+            <div id="editor">Click on a function to see its source code.</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    
     
   
 

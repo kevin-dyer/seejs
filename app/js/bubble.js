@@ -1,40 +1,42 @@
 (function (exports) {
-  var w = 730,
-        h = 750,
-        r = 720,
-        x = d3.scale.linear().range([0, r]),
-        y = d3.scale.linear().range([0, r]),
-        node,
-        nodes,
+  var container = document.getElementsByClassName("page-content")[0],
+      // w = h = r = container.offsetWidth > container.offsetHeight ? container.offsetHeight : container.offsetWidth,
+      w = container.offsetWidth,
+      h = container.offsetHeight,
+      r = w > h ? h : w,
+      x = d3.scale.linear().range([0, r]),
+      y = d3.scale.linear().range([0, r]),
+      node,
+      nodes,
 
-        fontScale = d3.scale.linear()
-              .domain([1, r])
-              .range([6, 18]),
+      fontScale = d3.scale.linear()
+            .domain([1, r])
+            .range([6, 18]),
 
-        //brewer color solid color scale
-        colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
-        colorListLength = colorList.length, //9
+      //brewer color solid color scale
+      colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
+      colorListLength = colorList.length, //9
 
-        //colors:
-        backgroundColor = "#FFF",
-        selfBorderColor = "#f33",
-        depBorderColor = "black",
-        defaultBorderColor = "#1C5787",
-        anonymousBorderColor = "#ffcf40",
-        noDepBorderColor = "steelblue",
-        fileBorderColor = colorList[8],
+      //colors:
+      backgroundColor = "#FFF",
+      selfBorderColor = "#f33",
+      depBorderColor = "black",
+      defaultBorderColor = "#1C5787",
+      anonymousBorderColor = "#ffcf40",
+      noDepBorderColor = "steelblue",
+      fileBorderColor = colorList[8],
 
-        defaultFillColor = "#1f77b4",
-        selfFillColor = defaultFillColor,
-        depFillColor = colorList[7],
-        anonymousFillColor = backgroundColor,
-        noDepFillColor = "#7D7D7D",
-        noChildFillColor = "#ccc",
-        fileFIllColor = colorList[1],
-        pathColor = "#FFFFFF",
+      defaultFillColor = "#1f77b4",
+      selfFillColor = defaultFillColor,
+      depFillColor = colorList[7],
+      anonymousFillColor = backgroundColor,
+      noDepFillColor = "#7D7D7D",
+      noChildFillColor = "#ccc",
+      fileFIllColor = colorList[1],
+      pathColor = "#FFFFFF",
 
-        fillColorList = d3.scale.category10().range(),
-        fillColorListLength = fillColorList.length;
+      fillColorList = d3.scale.category10().range(),
+      fillColorListLength = fillColorList.length;
 
   function fillColor (domain) {
     return fillColorList[domain % fillColorListLength];
@@ -67,9 +69,13 @@
   var vis = d3.select("svg.bubble-chart")
         .attr("width", w)
         .attr("height", h)
-        .call(zoom)
         .append("svg:g")
-        .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
+        
+        .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
+        .call(zoom)
+        .append("svg:g");
+        //.attr("transform", "translate(" + (w) / 2 + "," + (h) / 2 + ")");
+        //.attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
 
   /* Initialize tooltip */
   var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
@@ -239,10 +245,10 @@
     zoomScale = zoom.scale();
 
     if (d.type === 'file') {
-      return -0.75 * d.r * zoomScale;
-    } else if (d.r * zoomScale > 20 && d.children && d.children.length < 3) {
-      console.log(d.name, " has qualified!");
-      return (-11) / zoomScale;
+      return -0.75 * d.r;
+    } else if (d.r * zoomScale > 20 && d.children && d.children.length < 3 && d.children.length) {
+      //hack to avoid most common label collisions
+      return -11 / zoomScale;
     } else {
       return 3 / zoomScale;
     }
@@ -279,85 +285,7 @@
           .text(getLabelText);
 
     oldZoomScale = zoomScale;
-
-
-    //TEST
-    //try adding collision detection
-    //tickLabelDetection();
-    
-    
   }
-
-  // function tickLabelDetection (e) {
-  //   var q = d3.geom.quadtree(nodes),
-  //       i = 0,
-  //       n = nodes.length,
-  //       tickerIndex = 0;
-
-  //   // tickerInterval = setInterval(function () {
-  //   //   // console.log("ticker interval");
-  //   //   if (tickerIndex++ > n / 100) {
-  //   //     vis.selectAll("text")
-  //   //     .attr("x", function(d) { return d.x; })
-  //   //     .attr("y", function(d) { return d.y; });
-        
-  //   //     console.log("stopping ticker interval and resetting index");
-  //   //     tickerIndex = 0;
-  //   //     clearInterval(tickerInterval);
-  //   //   } else {
-  //   //     //q.visit(collide(nodes[i]));
-  //   //     customCollide();
-  //   //   }
-
-  //   //   // vis.selectAll("text")
-  //   //   //   //.attr("x", function(d) { return d.x; })
-  //   //   //   .attr("y", function(d) { return d.y + tickerIndex * oldZoomScale; });
-
-  //   // }, 10);
-        
-
-    
-  // }
-
-  // function customCollide () {
-  //   vis.selectAll("text")
-  //   //filter by only selecting
-  //   .filter(function (d) {
-  //     var allChildren = 0,
-  //         temp = d;
-
-  //     if (d.children.length < 3) {
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   })
-  //   .attr("dy", function(d) { return d. + ticker
-  // }
-
-  // function collide(node) {
-  //   var zoomScale = zoom.scale(),
-  //       r = 10 * zoomScale,//node.radius + 16,
-  //       nx1 = node.x - r,
-  //       nx2 = node.x + r,
-  //       ny1 = node.y - r,
-  //       ny2 = node.y + r;
-  //   return function(quad, x1, y1, x2, y2) {
-  //     if (quad.point && (quad.point !== node)) {
-  //       var //x = node.x - quad.point.x,
-  //           y = node.y - quad.point.y,
-  //           //l = Math.sqrt(x * x + y * y),
-  //           r = 30;//10 * zoomScale + quad.point.radius;// node.radius + quad.point.radius;
-  //       if (y < r) {
-  //         y = (y - r) / y * .5;
-  //         node.y -= y;
-  //         quad.point.y += y;
-  //       }
-  //     }
-  //     //return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-  //     return y1 > ny2 || y2 < ny1;
-  //   };
-  // }
 
   function getFontSize (d) {
     var zoomScale = zoom.scale(),
@@ -736,4 +664,24 @@ function receiveFilterTrace (port) {
   }
 }
 
+
+
+
+$(document).ready(function(){
+  $("#editor").on("hide.bs.collapse", function(){
+    $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-full"></span> Show Code')
+      .attr('class', 'side-bar-button btn btn-lg btn-info pull-right');
+  });
+  $("#editor").on("show.bs.collapse", function(){
+    $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-small"></span> Hide Code')
+      .attr('class', 'side-bar-button btn btn-lg pull-right btn-danger');
+  });
+
+  // $( "#side-bar" ).resizable({
+  //     maxHeight: 600,
+  //     maxWidth: 500,
+  //     minHeight: 500,
+  //     minWidth: 500
+  //   });
+});
 

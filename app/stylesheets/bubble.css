@@ -29,9 +29,7 @@ circle:hover {
 }
 
 svg.bubble-chart {
-  display: inline-block;
-  float:left;
-  /*background-color: #000;*/
+  background-color: #FFFFFF;
 }
 
 circle.highlighted {
@@ -39,5 +37,6 @@ circle.highlighted {
   opacity: 0.8;
   pointer-events:none;
 }
+
 
 
