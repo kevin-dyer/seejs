@@ -1,8 +1,8 @@
 (function (exports) {
   var container = document.getElementsByClassName("page-content")[0],
       // w = h = r = container.offsetWidth > container.offsetHeight ? container.offsetHeight : container.offsetWidth,
-      w = container.offsetWidth,
-      h = container.offsetHeight,
+      w = container.offsetWidth - 40,
+      h = container.offsetHeight - 40,
       r = w > h ? h : w,
       x = d3.scale.linear().range([0, r]),
       y = d3.scale.linear().range([0, r]),

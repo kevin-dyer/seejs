@@ -8,7 +8,12 @@ body {
   background-color: #F7F7F7;
 }
 
+.navbar.navbar-inverse{
+  margin-bottom: 0;
+}
+
 .page-content {
+  padding:20px;
   position: relative;
   flex: 1;
   text-align:center;
@@ -19,12 +24,14 @@ body {
 
 #side-bar {
   position:absolute;
-  right: 20px;
-  top: 0px;  
+  right: 30px;
+  top: 30px;  
 }
 
 #side-bar .side-bar-button {
   z-index: 100;
+  box-shadow: 0 2px 6px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+
 }
 
 #editor {
@@ -35,5 +42,5 @@ body {
   padding: 20px;
   margin: 10px;
   margin-right: 0;
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.16),0 4px 12px 0 rgba(0,0,0,0.12) !important;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.16),0 4px 12px 0 rgba(0,0,0,0.12);
 }
