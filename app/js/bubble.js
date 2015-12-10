@@ -6,6 +6,7 @@
       r = w > h ? h : w,
       x = d3.scale.linear().range([0, r]),
       y = d3.scale.linear().range([0, r]),
+      root,
       node,
       nodes,
 
@@ -70,7 +71,7 @@
         .attr("width", w)
         .attr("height", h)
         .append("svg:g")
-        
+        .attr("class", "outter-g")
         .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
         .call(zoom)
         .append("svg:g");
@@ -83,7 +84,7 @@
 
   
   function update(rootNode) {
-
+    root = rootNode;
     console.log("update rootNode: ", rootNode);
     nodes = pack.nodes(rootNode);
     
@@ -608,11 +609,41 @@
         .remove();
   }
 
+ 
+
+  function resizeVis() {
+    console.log("resize");
+    container = document.getElementsByClassName("page-content")[0];
+    w = container.offsetWidth - 40;
+    h = container.offsetHeight - 40;
+    r = w > h ? h : w;
+    x = d3.scale.linear().range([0, r]);
+    y = d3.scale.linear().range([0, r]);
+
+    pack.size([r, r]);
+
+    zoom.size([w, h]);
+
+    $("svg.bubble-chart").height(h).width(w);
+    $(".outter-g").attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
+
+
+    // vis.attr("width", w)
+    //    .attr("height", h);
+    vis.select("outter-g")
+          //.attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
+          .call(zoom);
+          // .append("svg:g");
+
+    update(root);
+  }
+
   window.bubble = {
     makeBubbleChart: makeBubbleChart,
     updateBubbleChart: update,
     getBorderWidth: getBorderWidth,
-    highlightActiveNode: highlightActiveNode
+    highlightActiveNode: highlightActiveNode,
+    resizeVis: resizeVis
   }
 })(window);
 
@@ -684,4 +715,13 @@ $(document).ready(function(){
   //     minWidth: 500
   //   });
 });
+
+var resizeDelayTimer;
+
+$(window).resize(function () {
+  clearTimeout(resizeDelayTimer);
+  resizeDelayTimer = setTimeout(bubble.resizeVis, 200);
+});
+
+
 

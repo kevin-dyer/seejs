@@ -36,7 +36,9 @@ body {
 
 #editor {
   width: 440px;
+  max-width: 75vw;
   height: 75vh;
+  max-height: 100%;
   /*border:1px solid black;*/
   border-radius: 4px;
   padding: 20px;
