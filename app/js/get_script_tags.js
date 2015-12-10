@@ -51,7 +51,10 @@
 
   function sendMessage (sourceCode) {
     console.log("sourceCode uniqueIds: ", sourceCode.map(function(x){return x.uniqueId;}));
-    chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode, type: 'sourceCode'}, function(response) {
+    chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode, type: 'sourceCode'}, function(response) {});
+    //var port = chrome.runtime.connect({name: "sourceCode"});
+    //
+    //port.postMessage({url: window.location.href, sourceCode: sourceCode, type: 'sourceCode'});
       // var d, x, t;
 
       // //TODO: add script tag to the bottom of the body to replace sourcecode
@@ -71,7 +74,6 @@
       //   // d.appendChild(x);
       // });
       // document.body.appendChild(d);
-    });
   }
 
   function loadXMLDoc(url, success, failure) {

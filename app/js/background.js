@@ -1,3 +1,4 @@
+"use strict";
 //TODO: wrap in closure
 var sourceCode,
     fileList,
@@ -207,24 +208,34 @@ function getScriptTags() {
 
 //listen for response from injected script: get_script_tags.js
 //NOTE: this is a one time message - OK
+// chrome.runtime.onConnect.addListener(function(port) {
+//   console.assert(port.name == "sourceCode");
+//   port.onMessage.addListener(function(request) {
+//     if (request.type === 'sourceCode') {
+//       //set Global variables
+//       setSourcePageUrl(request.url);
+//       setSourceCode(request.sourceCode);
+//       addCheckValueToFiles();
+
+//       sendScriptListToPopup();
+
+//       chrome.browserAction.setIcon({path: 'app/images/blue-icon.png'});
+//     } 
+//   });
+// });
+
+
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.type === 'sourceCode') {
+      console.log("received sourceCode response!");
       //set Global variables
       setSourcePageUrl(request.url);
       setSourceCode(request.sourceCode);
-      // updateFileList();
-      // updateInlineScriptList();
-
       addCheckValueToFiles();
-
       sendScriptListToPopup();
 
       chrome.browserAction.setIcon({path: 'app/images/blue-icon.png'});
-
-      // if (request){
-      //   sendResponse(modifiedSource);
-      // }
     }  
   }
 );

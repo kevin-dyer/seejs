@@ -22,7 +22,7 @@ body {
 }
 
 .script-list-container {
-  padding-bottom: 20px;
+  padding-bottom: 60px;
   min-height: 300px;
   max-height: 500px;
   overflow-y:scroll;
