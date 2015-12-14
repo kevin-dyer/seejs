@@ -21,7 +21,8 @@
       "app/js/background.js",
       "app/js/esprima.js",
       "app/js/utils.js",
-      "app/js/esmorph.js"
+      "app/js/esmorph.js",
+      "node_modules/js-beautify/js/lib/beautify.js"
     ],
     "persistent": false
   },

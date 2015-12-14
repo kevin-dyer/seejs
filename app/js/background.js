@@ -113,6 +113,17 @@ function buildCodeTree () {
   //console.log("completed codeTree: ", codeTree);
 }
 
+function unminifySourceCode () {
+  var i,
+      opts = { indent_size: 2 };
+
+  console.log("unminifying source code");
+
+  for (i = 0; i < sourceCode.length; i++) {
+    sourceCode[i].code = window.js_beautify(sourceCode[i].code, opts);
+  }
+}
+
 //NOT USED
 function setDependencies (codeTree) {
   console.log("setting dependencies");
@@ -268,6 +279,13 @@ chrome.extension.onConnect.addListener(function(port) {
     console.log("background got a message: ", msg);
     if (msg.type === "goAction") {
       port.postMessage("fired visualizeSourceCode");
+
+      console.log("msg.settings: ", msg.settings);
+      console.log("msg.settings.unminify: ", msg.settings.settings.unminify);
+      if (msg.settings.settings.unminify){
+        unminifySourceCode();
+      }
+
       visualizeSourceCode();
 
 

@@ -39,6 +39,8 @@ var ScriptItemComponent = React.createClass({
       label = 'lg';
     } else if (stringLength < 1000000) {
       label = 'xl';
+    } else {
+      label = 'xxl';
     }
     return label;
   },
@@ -74,8 +76,9 @@ var ScriptItemComponent = React.createClass({
         badgeClassName = 'badge';
 
     if (script.checked || hover) {
-      checkContainerClassName = sizeLabel ==='xl' ? 'script-check bg-danger':
-                                sizeLabel ==='lg' ? 'script-check bg-warning':
+      checkContainerClassName = sizeLabel === 'xxl' ? 'script-check bg-extreme-danger' :
+                                sizeLabel === 'xl' ? 'script-check bg-danger' :
+                                sizeLabel === 'lg' ? 'script-check bg-warning' :
                                 'script-check bg-info';
       checkContainerClassName += (hover && !script.checked) ? ' hover' : '';
       

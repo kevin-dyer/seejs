@@ -26,6 +26,7 @@ body {
   position:absolute;
   right: 30px;
   top: 30px;  
+  text-align: left;
 }
 
 #side-bar .side-bar-button {
@@ -35,6 +36,7 @@ body {
 }
 
 #editor {
+  text-align:left;
   width: 440px;
   max-width: 75vw;
   height: 75vh;

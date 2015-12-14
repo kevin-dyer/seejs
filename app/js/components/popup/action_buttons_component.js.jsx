@@ -3,6 +3,7 @@ var React = require('../../../../node_modules/react');
 var ActionButtonsComponent = React.createClass({
   getDefaultProps: function () {
     return {
+      settings: {unminify: false},
       actionType: 'go',
       disabled: false,
       clickAction: null
@@ -36,7 +37,8 @@ var ActionButtonsComponent = React.createClass({
     $('#popup-content').slideUp("slow", function () {
       console.log("slideUp complete!");
       self.props.clickAction({
-        type: 'goAction'
+        type: 'goAction',
+        settings: self.props.settings
       });
       window.close();
     });

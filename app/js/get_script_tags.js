@@ -12,19 +12,14 @@
       eleHTML,
       uniqueKey = 0;
 
-  console.log("all script files: ", scriptFiles);
-
   for (i = 0; i < filesLength; i++) {
     ele = scriptFiles[i],
     eleSrc = ele.getAttribute('src'),
     eleHTML = ele.innerHTML;
     console.log("processing Ele: ", eleSrc);
     if (eleHTML) {
-      console.log("there is contents in: ", eleSrc);
-      //TODO: add extention option to include/exclude inline scripts
       sourceCode.push({uniqueKey: uniqueKey++, name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
     } else if (eleSrc) {
-      console.log("Sending eleSrc: ", eleSrc);
       loadXMLDoc(eleSrc, 
         function (responseCode, url) {
           sourceCode.push({uniqueKey: uniqueKey++, name: url, size: responseCode.length, type: "file", code: responseCode});
@@ -50,7 +45,6 @@
   }
 
   function sendMessage (sourceCode) {
-    console.log("sourceCode uniqueIds: ", sourceCode.map(function(x){return x.uniqueId;}));
     chrome.runtime.sendMessage({url: window.location.href, sourceCode: sourceCode, type: 'sourceCode'}, function(response) {});
     //var port = chrome.runtime.connect({name: "sourceCode"});
     //

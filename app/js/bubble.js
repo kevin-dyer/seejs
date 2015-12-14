@@ -14,6 +14,8 @@
             .domain([1, r])
             .range([6, 18]),
 
+      editor = ace.edit("editor"),
+
       //brewer color solid color scale
       colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
       colorListLength = colorList.length, //9
@@ -61,7 +63,7 @@
   var zoom = d3.behavior.zoom()
     .translate([0, 0])
     .center(null)
-    .scaleExtent([1, 12])
+    .scaleExtent([1, 50])
     .size([w, h])
     .on("zoom", zoomed)
     .on("zoomstart", zoomStarted)
@@ -85,16 +87,15 @@
   
   function update(rootNode) {
     root = rootNode;
-    console.log("update rootNode: ", rootNode);
     nodes = pack.nodes(rootNode);
     
     var editor = ace.edit("editor");
 
     updateCircles(nodes);
-    updateLabels(nodes);
+    updateLabels(nodes.filter(hasLabel));
     removePaths();
 
-    editor.setValue('var instructions = "Click on a function to see its source code.";');
+    //editor.setValue('var instructions = "Click on a function to see its source code.";');
   }
 
   function updateCircles (nodes) {
@@ -128,21 +129,12 @@
       .on("click", onCircleClick)
       //.on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', function(d) {
-        if (d.name !== 'root' && d.type !== 'hidden') {
+        if (d.name !== 'root' && d.type !== 'hidden' && d.name !== '[Anonymous]') {
           tip.show(d);
-        }
-        if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
-          //show/hide border of hidden anonymous circles (maybe including files)
-          d3.select(this).style("opacity", 1);
         }
       })
       .on('mouseout', function (d) {
         tip.hide();
-
-        if (d.type === 'file' || (d.name === '[Anonymous]' && d.parent.type === 'file')) {
-          //show/hide border of hidden anonymous circles (maybe including files)
-          d3.select(this).style("opacity", 1e-6);
-        }
       });
 
     circles.exit()
@@ -169,7 +161,8 @@
         .duration(500)
         .style("opacity", getLabelOpacity);
       
-    labels.enter().append("svg:text")
+    labels
+      .enter().append("svg:text")
       .attr("class", getClass)
       .attr("x", function(d) { return d.x; })
       .attr("y", function(d) { return d.y; })
@@ -205,12 +198,18 @@
     //TODO: add back in
     //toggleDependencies(d, i);
 
+    //TODO: add editor value
+    setEditorContents(d);
+
     d3.event.stopPropagation();
   }
 
+  function hasLabel (d) {
+    return d.name !== '[Anonymous]' && d.name !== 'root';
+  }
 
   function getLabelOpacity (d) {
-    if (d.r * zoom.scale() < 15 || d.name === '[Anonymous]' || d.name === 'root') {
+    if (d.r * zoom.scale() < 15) {
       return 1e-6;
     } else {
       return 1;
@@ -219,27 +218,22 @@
 
   //TODO: make simpler
   function getLabelText (d) {
-    var text = d.name,
-        textLength = text.length,
-        textSplit,
+    // var text = d.name,
+    //     textLength = text.length,
+    //     zoomScale = zoom.scale();
+    
+    // if (textLength * letterWidth > (d.r * 2 * zoomScale)) {
+    //   if (d.type === 'file') {
+    //     text = getBaseFileName(d)
+    //   } else {
+    //     text = UTILS.getBaseName(d);
+    //   }
+    // }
+    var text = getToolTipText(d),
         letterWidth = getFontSize(d),
-        circlePadding = 3,
-        minTextLength = 3,
         zoomScale = zoom.scale();
 
-    if (d.name === '[Anonymous]' || d.name === 'root') {
-      return '';
-    }
-    
-    if (textLength * letterWidth > (d.r * 2 * zoomScale)) {
-      if (d.type === 'file') {
-        text = UTILS.getBaseFileName(d);
-      } else {
-        text = UTILS.getBaseName(d);
-      }
-    }
-
-    return text.slice(0, parseInt(d.r * 2 * zoomScale / letterWidth));
+    return text.slice(0, parseInt(d.r * zoomScale / letterWidth * 2 + 2));
   }
 
   function getLabelVerticalOffset (d, zoomScale) {
@@ -256,18 +250,14 @@
   }
 
   function zoomStarted () {
-    clearInterval(tickerInterval);
   }
 
   function zoomed () {
-    //console.log("d3.event.translate: ", d3.event.translate);
-    //console.log("d3.event.scale: ", d3.event.scale);
     vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   }
 
   //var zoomScale;
   var oldZoomScale = 1;
-  var tickerInterval;
   
   function zoomEnded () {
     var zoomScale = zoom.scale();
@@ -279,11 +269,25 @@
     var circles = vis.selectAll("circle")
           .style("stroke-width", getBorderWidth);
 
+    //TODO: filter labels to only update labels that are on screen... (idk if its worth it)
     var labels = vis.selectAll("text")
-          .style("opacity", getLabelOpacity)
-          .attr("dy", getLabelVerticalOffset)
-          .style("font-size", getFontSize)
-          .text(getLabelText);
+          .attr("dy", getLabelVerticalOffset);
+
+    labels.filter(function (d) {
+      return this.style.opacity === '1e-06';
+    }).style('font-size', getFontSize)
+      .text(getLabelText)
+      .transition()
+        .duration(500)
+        .style("opacity", getLabelOpacity);
+
+    labels.filter(function (d) {
+      return this.style.opacity !== '1e-06';
+    }).transition()
+        .duration(500)
+        .style("font-size", getFontSize)
+        .style("opacity", getLabelOpacity)
+      .transition().delay(500).text(getLabelText);
 
     oldZoomScale = zoomScale;
   }
@@ -294,6 +298,8 @@
 
     if (d.type === 'file') {
       fontSize = 20;
+    } else if (d.children && d.children.length) {
+      fontSize = 12;
     } else {
       //fontSize = fontScale(d.r);
       //console.log("fontSize: ", fontSize);
@@ -310,7 +316,6 @@
   function toggleDependencies (d, i) {
     showDependencyPaths(d);
     updateDependencyText(d, i);
-    setEditorContents(d);
   }
 
 
@@ -362,26 +367,10 @@
     labels.style("fill", function (d) {
       return getTextFill(d, thisD);
     });
-      // .style("text-shadow", function (d) {
-      //   return getTextShadow(d, thisD)
-      // });
-  }
-
-  function getTextFill(d, thisD) {
-    if (thisD && thisD.dependencies && thisD.dependencies.indexOf(d) >= 0) {
-      return "#FFFFFF";
-    } else if (d.children && d.children.length) {
-      return "black";
-    } else if (!d.dependencies || !d.dependencies.length){
-      return "#FFFFFF";
-    } else {
-      return "#1f77b4";
-    }
   }
 
   function setEditorContents (d) {
     var parent = d,
-        editor = ace.edit("editor"),
         range;
 
     if (d.treeNode) {
@@ -542,8 +531,6 @@
       return 1e-6;
     } else if (d.type === 'file' || d.type === 'inlineScript') {
       return 1e-6;
-    } if (d.name === '[Anonymous]' && d.parent.type === 'file' && (!d.children || !d.children.length)) {
-      return 1e-6;
     } else if (d.name === '[Anonymous]') {
       return 1;
     } else {
@@ -554,24 +541,12 @@
   function getBorderWidth(d) {
     var zoomScale = zoom.scale();
 
-    // if (d.type === 'file' || d.type === 'inlineScript') {
-    //   return 5;
-    // } else if (d.name === '[Anonymous]') {
-    //   return 0.5;
-    // } else {
-    //   return 1.5;
-    // }
-
     return 1.5 / zoomScale;
   }
 
   function getToolTipText (d) {
     if (d.type === 'file') {
       return getBaseFileName(d.name);
-    } else if (d.parent && d.parent.type === 'file' && d.parent.children.length === 1 && d.name === '[Anonymous]') {
-      return getBaseFileName(d.parent.name) + '<br/>' + 'Anon.';
-    } else if (d.name === '[Anonymous]') {
-      return 'Anon.';
     } else {
       return d.name;
     }
@@ -579,7 +554,18 @@
 
   function getBaseFileName (name) {
     var nameSplit = name.split('/');
-    return nameSplit[(nameSplit.length - 1)];
+
+    return removeFileNameCash(nameSplit[(nameSplit.length - 1)]);
+  }
+
+  function removeFileNameCash (name) {
+    var cashSplit = name.split('?');
+
+    if (cashSplit.length > 1) {
+      cashSplit.pop();
+    }
+
+    return cashSplit.join('');
   }
 
   function getClass (d) {
@@ -612,7 +598,6 @@
  
 
   function resizeVis() {
-    console.log("resize");
     container = document.getElementsByClassName("page-content")[0];
     w = container.offsetWidth - 40;
     h = container.offsetHeight - 40;
