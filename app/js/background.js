@@ -115,7 +115,7 @@ function buildCodeTree () {
 
 function unminifySourceCode () {
   var i,
-      opts = { indent_size: 2 };
+      opts = { indent_size: 2, jslint_happy: true };
 
   console.log("unminifying source code");
 
@@ -280,9 +280,7 @@ chrome.extension.onConnect.addListener(function(port) {
     if (msg.type === "goAction") {
       port.postMessage("fired visualizeSourceCode");
 
-      console.log("msg.settings: ", msg.settings);
-      console.log("msg.settings.unminify: ", msg.settings.settings.unminify);
-      if (msg.settings.settings.unminify){
+      if (msg.settings && msg.settings.settings && msg.settings.settings.unminify){
         unminifySourceCode();
       }
 

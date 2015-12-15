@@ -84,6 +84,8 @@
   var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
   vis.call(tip);
 
+  editor.resize(true);
+
   
   function update(rootNode) {
     root = rootNode;
@@ -198,8 +200,9 @@
     //TODO: add back in
     //toggleDependencies(d, i);
 
-    //TODO: add editor value
-    setEditorContents(d);
+    if (showEditor) {
+      setEditorContents(d);
+    }
 
     d3.event.stopPropagation();
   }
@@ -369,27 +372,45 @@
     });
   }
 
+  var currentEditorScript = parent.uniqueId;
   function setEditorContents (d) {
-    var parent = d,
-        range;
+    var parent,
+        range,
+        code;
 
     if (d.treeNode) {
           range = d.treeNode.range;
 
-      while (parent) {
-        if (parent.type === 'file' || parent.type === 'inlineScript') {
-          fileName = parent.name;
-          break;
-        }
-        parent = parent.parent;
+      parent = getParentFile(d);
+
+      if (parent !== currentEditorScript) {
+        editor.setValue(parent.sourceCode);
+
+        currentEditorScript = parent;
       }
 
-      if (d.type === 'file' || d.type === 'innerHTML') {
-        editor.setValue(parent.sourceCode);
-      } else {
-        editor.setValue(parent.sourceCode.slice(range[0], range[1]));
-      }
-      editor.navigateFileStart();
+      //editor.goToLine(range[0]);
+      var loc = d.treeNode && d.treeNode.loc ? d.treeNode.loc.start : {line:0, column: 0};
+      editor.resize(true);
+      //editor.scrollToLine(loc.line, loc.column, true);
+      editor.gotoLine(loc.line, loc.column, true);
+
+
+      // while (parent) {
+      //   if (parent.type === 'file' || parent.type === 'inlineScript') {
+      //     fileName = parent.name;
+      //     break;
+      //   }
+      //   parent = parent.parent;
+      // }
+
+      // if (d.type === 'file' || d.type === 'innerHTML') {
+      //   editor.setValue(parent.sourceCode);
+      // } else {
+      //   editor.setValue(parent.sourceCode.slice(range[0], range[1]));
+      // }
+      
+      //editor.navigateFileStart();
     }
   }
 
@@ -447,6 +468,7 @@
 
     //node = root; //for zoom
 
+    console.log("root: ", root);
     update(root);
   }
 
@@ -628,7 +650,8 @@
     updateBubbleChart: update,
     getBorderWidth: getBorderWidth,
     highlightActiveNode: highlightActiveNode,
-    resizeVis: resizeVis
+    resizeVis: resizeVis,
+    editor: editor
   }
 })(window);
 
@@ -689,25 +712,32 @@ function goToSourcePage() {
 }
 
 
-
+var showEditor = false;
 
 $(document).ready(function(){
-  $("#editor").on("hide.bs.collapse", function(){
+  $(".editor-wrapper").on("hide.bs.collapse", function(){
     $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-full"></span> Show Code')
       .attr('class', 'side-bar-button btn btn-lg btn-info pull-right');
+      showEditor = false;
   });
-  $("#editor").on("show.bs.collapse", function(){
+  $(".editor-wrapper").on("show.bs.collapse", function(){
     $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-small"></span> Hide Code')
       .attr('class', 'side-bar-button btn btn-lg pull-right btn-danger');
+      showEditor = true;
   });
   $(".webpage-title").click(goToSourcePage);
 
-  // $( "#side-bar" ).resizable({
-  //     maxHeight: 600,
-  //     maxWidth: 500,
-  //     minHeight: 500,
-  //     minWidth: 500
-  //   });
+  $( ".editor-wrapper" ).resizable({
+      handles: 's, e, sw',
+      maxHeight: 1000,
+      maxWidth: 1000,
+      minHeight: 100,
+      minWidth: 200,
+      stop: function (e) {
+        window.bubble.editor.resize();
+        console.log("called editor.resize()");
+      }
+    });
 
 
 });

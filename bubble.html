@@ -8,11 +8,13 @@
     <link rel="stylesheet" href="app/stylesheets/bubble.css">
     <link rel="stylesheet" href="app/stylesheets/tool-tip.css">
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="node_modules/jquery-ui/themes/base/minified/jquery-ui.min.css">
 
     <script src="node_modules/d3/d3.min.js"></script>
     <script src="node_modules/d3-tip/index.js"></script>
     <script src="node_modules/ace-builds/src-min/ace.js"></script>
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/jquery-ui/jquery-ui.min.js"></script>
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
     <script src="app/js/utils.js"></script>
@@ -54,13 +56,15 @@
     <div class="page-content">
       <svg class="bubble-chart"></svg>
 
-      <!--<pre id="editor">var instructions = "Click on a function to see its source code.";</pre>-->
       <div id="side-bar">
-        <button type="button" class="side-bar-button btn btn-lg btn-info pull-right" data-toggle="collapse" data-target="#editor">
+        <button type="button" class="side-bar-button btn btn-lg btn-info pull-right" data-toggle="collapse" data-target=".editor-wrapper">
           <span class="glyphicon glyphicon-resize-full"></span> Show Code
         </button>
         <div class="clearfix"></div>
-        <div id="editor" class="collapse">Click on a function to see its source code.</div>
+        <div class="collapse editor-wrapper">
+          <div id="editor">// Click on a function to see it's source code.</div>
+          <div id="handle" class="ui-resizable-handle ui-resizable-sw"><span class="glyphicon glyphicon-menu-down"></span></div>
+        </div>
       </div>
     </div>
 
