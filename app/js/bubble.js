@@ -15,6 +15,7 @@
             .range([6, 18]),
 
       editor = ace.edit("editor"),
+      currentEditorNode,
 
       //brewer color solid color scale
       colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
@@ -77,16 +78,95 @@
         .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
         .call(zoom)
         .append("svg:g");
-        //.attr("transform", "translate(" + (w) / 2 + "," + (h) / 2 + ")");
-        //.attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
 
   /* Initialize tooltip */
   var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
   vis.call(tip);
 
+//for editor 
   editor.resize(true);
+  editor.setAnimatedScroll(true);
 
-  
+  $("#editor").click(function () {
+    var position = editor.getCursorPosition();
+    var cursorIndex = new ace.EditSession(editor.getValue()).getDocument().positionToIndex(position);
+
+    var selectedCircle = getNodeFromEditorPosition(cursorIndex);
+    highlightCircle(selectedCircle);
+  });
+
+  function getNodeFromEditorPosition (cursorIndex) {
+    var smallestNode = findSmallestWrappingNode(cursorIndex, currentEditorNode);
+    
+    if (smallestNode) {
+      return $("#n" + smallestNode.uniqueId)[0];
+    } 
+    console.log("smallestNode does NOT exist");
+  }
+
+  function findSmallestWrappingNode (cursorIndex, tmpNode) {
+    var tmpChildren = tmpNode.children,
+        tmpChild;
+
+    if (!tmpChildren || !tmpChildren.length) {
+      return tmpNode;
+    }
+
+    for(var i=0, l = tmpChildren.length; i < l; i++) {
+      tmpChild = tmpChildren[i];
+      if (insideNode(cursorIndex, tmpChild)) {
+        tmpNode = findSmallestWrappingNode(cursorIndex, tmpChild);
+        break;
+      }
+    }
+    return tmpNode;
+  }
+
+  //returns boolean if current position is inside node
+  function insideNode (cursorIndex, testNode) {
+    var treeNode = testNode.treeNode,
+        range = treeNode ? treeNode.range : null,
+        start,
+        end;
+
+    if (range) {
+      start = range[0];
+      end = range[1];
+      if (start <= cursorIndex && end >= cursorIndex) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function highlightCircle (selectedCircle) {
+    var zoomScale = zoom.scale();
+
+    d3.select(".selected").style("stroke", getBorderColor)
+      .classed("selected", false);
+
+    d3.select(selectedCircle)
+      .classed("selected", true)
+      .style("opacity", 1)
+      .style("stroke", "#000000")
+      .transition()
+        .duration(750)
+        .style("stroke-width", (5 / zoomScale))
+        .attr("r", function (d) {
+          return d.r + 30 / zoomScale;
+        })
+      .transition()
+        .delay(750)
+        .style("stroke-width", getBorderWidth)
+        .style("stroke", selfBorderColor)
+        .style("opacity", getOpacity)
+        .attr("r", function (d) {
+          return d.r;
+        });
+  }
+
+
   function update(rootNode) {
     root = rootNode;
     nodes = pack.nodes(rootNode);
@@ -97,7 +177,6 @@
     updateLabels(nodes.filter(hasLabel));
     removePaths();
 
-    //editor.setValue('var instructions = "Click on a function to see its source code.";');
   }
 
   function updateCircles (nodes) {
@@ -129,7 +208,6 @@
       .style("stroke-width", getBorderWidth)
       .style("opacity", getOpacity)
       .on("click", onCircleClick)
-      //.on("dblclick", function (d) {root = d; update(root); d3.event.stopPropagation();})//zoom(node == d ? root : d);d3.event.stopPropagation();})
       .on('mouseover', function(d) {
         if (d.name !== 'root' && d.type !== 'hidden' && d.name !== '[Anonymous]') {
           tip.show(d);
@@ -219,19 +297,7 @@
     }
   }
 
-  //TODO: make simpler
   function getLabelText (d) {
-    // var text = d.name,
-    //     textLength = text.length,
-    //     zoomScale = zoom.scale();
-    
-    // if (textLength * letterWidth > (d.r * 2 * zoomScale)) {
-    //   if (d.type === 'file') {
-    //     text = getBaseFileName(d)
-    //   } else {
-    //     text = UTILS.getBaseName(d);
-    //   }
-    // }
     var text = getToolTipText(d),
         letterWidth = getFontSize(d),
         zoomScale = zoom.scale();
@@ -272,7 +338,6 @@
     var circles = vis.selectAll("circle")
           .style("stroke-width", getBorderWidth);
 
-    //TODO: filter labels to only update labels that are on screen... (idk if its worth it)
     var labels = vis.selectAll("text")
           .attr("dy", getLabelVerticalOffset);
 
@@ -304,8 +369,6 @@
     } else if (d.children && d.children.length) {
       fontSize = 12;
     } else {
-      //fontSize = fontScale(d.r);
-      //console.log("fontSize: ", fontSize);
       fontSize = 11;
     }
 
@@ -372,7 +435,6 @@
     });
   }
 
-  var currentEditorScript = parent.uniqueId;
   function setEditorContents (d) {
     var parent,
         range,
@@ -383,34 +445,15 @@
 
       parent = getParentFile(d);
 
-      if (parent !== currentEditorScript) {
+      if (!currentEditorNode || parent.uniqueId !== currentEditorNode.uniquId) {
         editor.setValue(parent.sourceCode);
 
-        currentEditorScript = parent;
+        currentEditorNode = parent;
       }
 
-      //editor.goToLine(range[0]);
       var loc = d.treeNode && d.treeNode.loc ? d.treeNode.loc.start : {line:0, column: 0};
       editor.resize(true);
-      //editor.scrollToLine(loc.line, loc.column, true);
       editor.gotoLine(loc.line, loc.column, true);
-
-
-      // while (parent) {
-      //   if (parent.type === 'file' || parent.type === 'inlineScript') {
-      //     fileName = parent.name;
-      //     break;
-      //   }
-      //   parent = parent.parent;
-      // }
-
-      // if (d.type === 'file' || d.type === 'innerHTML') {
-      //   editor.setValue(parent.sourceCode);
-      // } else {
-      //   editor.setValue(parent.sourceCode.slice(range[0], range[1]));
-      // }
-      
-      //editor.navigateFileStart();
     }
   }
 
@@ -425,31 +468,6 @@
         
     return line(points);
   }
-
-  // function zoom(d, i) {
-  //   var k = r / d.r / 2,
-  //       t;
-
-  //   x.domain([d.x - d.r, d.x + d.r]);
-  //   y.domain([d.y - d.r, d.y + d.r]);
-
-  //   t = vis.transition()
-  //       .duration(d3.event.altKey ? 7500 : 750);
-
-  //   t.selectAll("circle")
-  //       .attr("cx", function(d) { return x(d.x); })
-  //       .attr("cy", function(d) { return y(d.y); })
-  //       .attr("r", function(d) { return k * d.r; });
-
-  //   t.selectAll("text")
-  //       .attr("x", function(d) { return x(d.x); })
-  //       .attr("y", function(d) { return y(d.y); })
-  //       .style("opacity", function(d) { return k * d.r > 20 ? 1 : 0; });
-
-  //   node = d;
-  //   d3.event.stopPropagation();
-  // }
-
 
 
   function makeBubbleChart (root)  {
@@ -490,8 +508,6 @@
     }
   }
 
-  
-
   function getFillColor (d, i, thisD) {
     var parentFile,
         sourceIndex,
@@ -523,17 +539,8 @@
 
     fileFillColor = fillColor(sourceIndex);
 
-    // console.log("parentFile.sourceIndex: ", parentFile.sourceIndex, ", fill color: ", fillColor(parentFile.sourceIndex));
-    //console.log("sourceIndex: ", sourceIndex, ", fill color: ", fileFillColor);
-
-
     return parentFile ? fileFillColor : backgroundColor;
   }
-
-  //TEST
-  // console.log("fillColor 10: ", fillColor(10));
-  // console.log("fillColor 11: ", fillColor(11));
-  // console.log("fillColor 12: ", fillColor(12));
 
 
   function getParentFile (d) {
@@ -628,20 +635,12 @@
     y = d3.scale.linear().range([0, r]);
 
     pack.size([r, r]);
-
     zoom.size([w, h]);
 
     $("svg.bubble-chart").height(h).width(w);
     $(".outter-g").attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
 
-
-    // vis.attr("width", w)
-    //    .attr("height", h);
-    vis.select("outter-g")
-          //.attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
-          .call(zoom);
-          // .append("svg:g");
-
+    vis.select("outter-g").call(zoom);
     update(root);
   }
 
