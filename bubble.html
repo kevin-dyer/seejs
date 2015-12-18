@@ -39,7 +39,8 @@
                 <span class="glyphicon glyphicon-menu-hamburger"></span> MENU
               </a>
             
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu action-menu">
+                <li><a href="#" id="show-code">show code</a></li>
                 <li><a href="#" id="start-tracer">trace</a></li>
                 <li><a href="#" id="stop-tracer">stop trace</a></li>
                 <li><a href="#" id="expand-code">unminify code</a></li>
@@ -57,11 +58,9 @@
       <svg class="bubble-chart"></svg>
 
       <div id="side-bar">
-        <button type="button" class="side-bar-button btn btn-lg btn-info pull-right" data-toggle="collapse" data-target=".editor-wrapper">
-          <span class="glyphicon glyphicon-resize-full"></span> Show Code
-        </button>
-        <div class="clearfix"></div>
-        <div class="collapse editor-wrapper">
+        <div class="editor-wrapper">
+
+          <button type="button" class="close-editor-button active btn btn-small pull-right">Close</button>
           <div id="editor">// Click on a function to see it's source code.</div>
           <div id="handle" class="ui-resizable-handle ui-resizable-sw"><span class="glyphicon glyphicon-menu-down"></span></div>
         </div>

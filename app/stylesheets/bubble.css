@@ -30,7 +30,7 @@ circle:hover {
 
 svg.bubble-chart {
   background-color: #FFFFFF;
-
+  opacity:0;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;

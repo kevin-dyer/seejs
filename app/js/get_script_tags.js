@@ -10,7 +10,8 @@
       ele,
       eleScr,
       eleHTML,
-      uniqueKey = 0;
+      uniqueKey = 0,
+      hasAjaxContent;
 
   for (i = 0; i < filesLength; i++) {
     ele = scriptFiles[i],
@@ -20,6 +21,7 @@
     if (eleHTML) {
       sourceCode.push({uniqueKey: uniqueKey++, name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
     } else if (eleSrc) {
+      hasAjaxContent = true;
       loadXMLDoc(eleSrc, 
         function (responseCode, url) {
           sourceCode.push({uniqueKey: uniqueKey++, name: url, size: responseCode.length, type: "file", code: responseCode});
@@ -34,6 +36,11 @@
         });
       requests++;
     }
+  }
+
+  //if only inline scripts
+  if (!hasAjaxContent) {
+    sendMessage(sourceCode);
   }
 
   function batchResponse (sourceCode, callback, requests) {

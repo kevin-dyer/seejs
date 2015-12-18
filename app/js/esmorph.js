@@ -226,6 +226,10 @@
                 functionObject = {
                     name: parent.id ? parent.id.name : '[Anonymous]'
                 };
+            } else if (parent.type === Syntax.Property) {
+                functionObject = {
+                    name: parent.key ? parent.key.name : '[Anonymous]'
+                };
             } else if (typeof parent.length === 'number') {
                 functionObject = {
                     name: parent.id ? parent.id.name : '[Anonymous]'

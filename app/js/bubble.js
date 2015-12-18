@@ -73,6 +73,7 @@
   var vis = d3.select("svg.bubble-chart")
         .attr("width", w)
         .attr("height", h)
+        .attr("opacity", 1)
         .append("svg:g")
         .attr("class", "outter-g")
         .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
@@ -82,6 +83,8 @@
   /* Initialize tooltip */
   var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
   vis.call(tip);
+
+  $("svg.bubble-chart").css("opacity", 1);
 
 //for editor 
   editor.resize(true);
@@ -302,7 +305,7 @@
         letterWidth = getFontSize(d),
         zoomScale = zoom.scale();
 
-    return text.slice(0, parseInt(d.r * zoomScale / letterWidth * 2 + 2));
+    return text ? text.slice(0, parseInt(d.r * zoomScale / letterWidth * 2 + 2)) : '';
   }
 
   function getLabelVerticalOffset (d, zoomScale) {
@@ -328,7 +331,7 @@
   //var zoomScale;
   var oldZoomScale = 1;
   
-  function zoomEnded () {
+  function zoomEnded (e) {
     var zoomScale = zoom.scale();
 
     if (zoomScale === oldZoomScale) {
@@ -714,20 +717,30 @@ function goToSourcePage() {
 var showEditor = false;
 
 $(document).ready(function(){
-  $(".editor-wrapper").on("hide.bs.collapse", function(){
-    $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-full"></span> Show Code')
-      .attr('class', 'side-bar-button btn btn-lg btn-info pull-right');
-      showEditor = false;
+  // $(".editor-wrapper").on("hide.bs.collapse", function(){
+  //   $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-full"></span> Show Code')
+  //     .attr('class', 'side-bar-button btn btn-lg btn-info pull-right');
+  //     showEditor = false;
+  // });
+  // $(".editor-wrapper").on("show.bs.collapse", function(){
+  //   $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-small"></span> Hide Code')
+  //     .attr('class', 'side-bar-button btn btn-lg pull-right btn-danger');
+  //     showEditor = true;
+  // });
+
+  $('.action-menu #show-code').click(function () {
+    $('#side-bar').fadeIn().height($('.bubble-chart').height());
+    showEditor = true;
   });
-  $(".editor-wrapper").on("show.bs.collapse", function(){
-    $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-small"></span> Hide Code')
-      .attr('class', 'side-bar-button btn btn-lg pull-right btn-danger');
-      showEditor = true;
+
+  $(".close-editor-button").click(function () {
+    $("#side-bar").fadeOut();
+    showEditor = false;
   });
   $(".webpage-title").click(goToSourcePage);
 
   $( ".editor-wrapper" ).resizable({
-      handles: 's, e, sw',
+      handles: 's, w, sw',
       maxHeight: 1000,
       maxWidth: 1000,
       minHeight: 100,
