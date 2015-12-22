@@ -8,7 +8,7 @@ var React = require('../../../../node_modules/react'),
 var PopupComponent = React.createClass({
   getInitialState: function () {
     return ({
-      settings: {unminify: false},
+      settings: {unminify: true},
       fileList: [],
       inlineScriptList: []
     });
@@ -43,12 +43,12 @@ var PopupComponent = React.createClass({
             SeeJS <small>Code Visualize</small>
           </h3>
         </div>
-        <DynamicScriptsComponent 
-          messageBackground={this.messageBackground} />
-
         <SettingsComponent
           settings={this.state.settings}
           updateSettings={this.updateSettings} />
+
+        <DynamicScriptsComponent 
+          messageBackground={this.messageBackground} />
 
         <ActionButtonsComponent 
           settings={this.state.settings}

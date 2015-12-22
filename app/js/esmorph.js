@@ -230,6 +230,10 @@
                 functionObject = {
                     name: parent.key ? parent.key.name : '[Anonymous]'
                 };
+            } else if (parent.type === Syntax.ConditionalExpression && parent.tmpName) {
+                functionObject = {
+                    name: parent.tmpName || '[Anonymous]'
+                };
             } else if (typeof parent.length === 'number') {
                 functionObject = {
                     name: parent.id ? parent.id.name : '[Anonymous]'
@@ -242,6 +246,17 @@
                         };
                     }
                 }
+            } else {
+                functionObject = {
+                    name: '[Anonymous]'
+                };
+            }
+            //setup for conditional functions
+        } else if (node.type === Syntax.ConditionalExpression && ((node.alternate && node.alternate.type === Syntax.FunctionExpression) || (node.conditional && node.conditional.type === Syntax.FunctionExpression))) {
+            if (parent.type === Syntax.VariableDeclarator && parent.id) {
+                node.tmpName = parent.id.name;
+            } else if (parent.type === Syntax.AssignmentExpression && parent.left) {
+                node.tmpName = parent.left.name;
             }
         }
 

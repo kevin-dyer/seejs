@@ -41,6 +41,7 @@ body {
   border-radius: 4px;
   padding-left: 0;
   padding-right: 0;
+  cursor: pointer;
 
 }
 
@@ -127,8 +128,11 @@ body {
 }
 
 
-.settings {
-
+.settings.script-list-container {
+  min-height: auto;
+  max-height: auto;
+  overflow-y:auto;
+  margin-bottom: 20px;
 }
 
 

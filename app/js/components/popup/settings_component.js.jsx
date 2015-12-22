@@ -1,15 +1,18 @@
-var React = require('../../../../node_modules/react');
+var React = require('../../../../node_modules/react'),
+    CheckboxItemComponent = require('./checkbox_item_component.js.jsx');
 
 var SettingsComponent = React.createClass({
-  getdefaultProps: function () {
+  getDefaultProps: function () {
     return ({
-      settings: {unminify: false},
+      settings: {unminify: true},
       updateSetting: null
     });
   },
 
   toggleUnminifySetting: function (){
     var settings = this.props.settings;
+
+    console.log("toggleUnminifySetting!!!");
     
     settings.unminify = !settings.unminify;
 
@@ -19,18 +22,18 @@ var SettingsComponent = React.createClass({
 
   render: function () {
     return (
-      <div className="settings">
+      <div className="settings script-list-container">
         <div className="settings-header">
-          <h6>
+          <h6 className="file-list-title">
             settings
           </h6>
         </div>
-        <div className='form'>
-          <div className='form-input-group'>
-            <input type='checkbox' onChange={this.toggleUnminifySetting} />
-            <label >Unminify source code</label>
-          </div>
-        </div>
+
+        <CheckboxItemComponent
+          checked={this.props.settings.unminify}
+          type='setting'
+          content='Unminify source code'
+          clickHandler={this.toggleUnminifySetting} />
       </div>
     )
   }

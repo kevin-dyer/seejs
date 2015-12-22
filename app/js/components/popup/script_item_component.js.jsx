@@ -1,4 +1,5 @@
-var React = require('../../../../node_modules/react');
+var React = require('../../../../node_modules/react'),
+    CheckboxItemComponent = require('./checkbox_item_component.js.jsx');
 
 var ScriptItemComponent = React.createClass({
 
@@ -9,20 +10,6 @@ var ScriptItemComponent = React.createClass({
       updateList: null,
       messageBackground: null
     });
-  },
-
-  getInitialState: function () {
-    return ({
-      hover: false
-    });
-  },
-
-  handleMouseEnter: function () {
-    this.setState({hover: true})
-  },
-
-  handleMouseLeave: function () {
-    this.setState({hover: false});
   },
 
   getSizeLabel: function () {
@@ -64,49 +51,17 @@ var ScriptItemComponent = React.createClass({
     });
   },
 
-
   render: function () {
     var script = this.props.script,
-        scriptIndex = this.props.scriptIndex,
-        hover = this.state.hover,
-        itemClassName = hover ? 'script-name active' : 'script-name',
-        sizeLabel = this.getSizeLabel(),
-        checkContainer,
-        checkContainerClassName,
-        badgeClassName = 'badge';
-
-    if (script.checked || hover) {
-      checkContainerClassName = sizeLabel === 'xxl' ? 'script-check bg-extreme-danger' :
-                                sizeLabel === 'xl' ? 'script-check bg-danger' :
-                                sizeLabel === 'lg' ? 'script-check bg-warning' :
-                                'script-check bg-info';
-      checkContainerClassName += (hover && !script.checked) ? ' hover' : '';
-      
-    } else {
-      checkContainerClassName = 'script-check invisible';
-    }
-
-     if (!script.checked) {
-      itemClassName += ' text-muted';
-      badgeClassName += ' badge-unchecked';
-    }
+        sizeLabel = this.getSizeLabel();
 
     return (
-      <li 
-        className="list-group-item script-file script-item" 
-        onClick={this.updateScriptItem}
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave} >
-
-        <div className={checkContainerClassName}></div>
-        <div className="script-name-container" >
-          <div className={itemClassName}>
-            {script.name}
-          </div>
-          <span className={badgeClassName}>{sizeLabel}</span>
-        </div>
-         
-      </li>
+      <CheckboxItemComponent
+        checked={script.checked}
+        type={sizeLabel + 'Script'}
+        content={script.name}
+        badgeContent={sizeLabel}
+        clickHandler={this.updateScriptItem} />
     );
   }    
 });

@@ -1,0 +1,256 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   '--save',
+1 verbose cli   'chrome-cpu-profiler' ]
+2 info using npm@2.12.1
+3 info using node@v0.10.39
+4 verbose node symlink /usr/local/bin/node
+5 verbose install initial load of /Users/employee/telmate_dev/seejs/package.json
+6 warn package.json gulp.browserify@1.0.0 No repository field.
+7 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/ace-builds/package.json
+8 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/babelify/package.json
+9 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/bootstrap/package.json
+10 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/browser-sync/package.json
+11 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/browserify/package.json
+12 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/d3/package.json
+13 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/d3-tip/package.json
+14 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/exorcist/package.json
+15 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/gulp/package.json
+16 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/gulp-util/package.json
+17 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/jquery/package.json
+18 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/jquery-ui/package.json
+19 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/js-beautify/package.json
+20 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/react/package.json
+21 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/react-dom/package.json
+22 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/vinyl-source-stream/package.json
+23 verbose installManyTop reading scoped package data from /Users/employee/telmate_dev/seejs/node_modules/watchify/package.json
+24 info package.json exorcist@0.4.0 license should be a valid SPDX license expression
+25 info package.json jquery-ui@1.10.5 No license field.
+26 info package.json ace-builds@1.2.2 license should be a valid SPDX license expression
+27 info package.json jquery@2.1.4 No license field.
+28 verbose readDependencies loading dependencies from /Users/employee/telmate_dev/seejs/package.json
+29 silly cache add args [ 'chrome-cpu-profiler', null ]
+30 verbose cache add spec chrome-cpu-profiler
+31 silly cache add parsed spec { raw: 'chrome-cpu-profiler',
+31 silly cache add   scope: null,
+31 silly cache add   name: 'chrome-cpu-profiler',
+31 silly cache add   rawSpec: '',
+31 silly cache add   spec: '*',
+31 silly cache add   type: 'range' }
+32 silly addNamed chrome-cpu-profiler@*
+33 verbose addNamed "*" is a valid semver range for chrome-cpu-profiler
+34 silly addNameRange { name: 'chrome-cpu-profiler', range: '*', hasData: false }
+35 silly mapToRegistry name chrome-cpu-profiler
+36 silly mapToRegistry using default registry
+37 silly mapToRegistry registry https://registry.npmjs.org/
+38 silly mapToRegistry uri https://registry.npmjs.org/chrome-cpu-profiler
+39 verbose addNameRange registry:https://registry.npmjs.org/chrome-cpu-profiler not in flight; fetching
+40 verbose request uri https://registry.npmjs.org/chrome-cpu-profiler
+41 verbose request no auth needed
+42 info attempt registry request try #1 at 22:38:10
+43 verbose request id a0d8d2d074766040
+44 verbose etag "EG3FXNG1AZI72BZNX01RNUB27"
+45 http request GET https://registry.npmjs.org/chrome-cpu-profiler
+46 http 304 https://registry.npmjs.org/chrome-cpu-profiler
+47 silly get cb [ 304,
+47 silly get   { date: 'Mon, 21 Dec 2015 21:38:11 GMT',
+47 silly get     via: '1.1 varnish',
+47 silly get     'cache-control': 'max-age=300',
+47 silly get     etag: '"EG3FXNG1AZI72BZNX01RNUB27"',
+47 silly get     age: '66',
+47 silly get     connection: 'keep-alive',
+47 silly get     'x-served-by': 'cache-lcy1132-LCY',
+47 silly get     'x-cache': 'HIT',
+47 silly get     'x-cache-hits': '1',
+47 silly get     'x-timer': 'S1450733891.095138,VS0,VE0',
+47 silly get     vary: 'Accept' } ]
+48 verbose etag https://registry.npmjs.org/chrome-cpu-profiler from cache
+49 verbose get saving chrome-cpu-profiler to /Users/employee/.npm/registry.npmjs.org/chrome-cpu-profiler/.cache.json
+50 silly addNameRange number 2 { name: 'chrome-cpu-profiler', range: '*', hasData: true }
+51 silly addNameRange versions [ 'chrome-cpu-profiler',
+51 silly addNameRange   [ '0.1.0', '0.1.1', '0.1.2', '1.0.1', '1.0.3' ] ]
+52 silly addNamed chrome-cpu-profiler@1.0.3
+53 verbose addNamed "1.0.3" is a plain semver version for chrome-cpu-profiler
+54 silly cache afterAdd chrome-cpu-profiler@1.0.3
+55 verbose afterAdd /Users/employee/.npm/chrome-cpu-profiler/1.0.3/package/package.json not in flight; writing
+56 verbose afterAdd /Users/employee/.npm/chrome-cpu-profiler/1.0.3/package/package.json written
+57 silly install resolved [ { name: 'chrome-cpu-profiler',
+57 silly install resolved     version: '1.0.3',
+57 silly install resolved     description: 'Convert the output of v8-profiler to work in google chrome',
+57 silly install resolved     main: 'index.js',
+57 silly install resolved     scripts: { lint: 'jshint . --reporter=./node_modules/jshint-full-path/index.js' },
+57 silly install resolved     publishConfig: { registry: 'http://registry.npmjs.org' },
+57 silly install resolved     author: { name: 'Tom Gallacher', email: 'tomgallacher23@gmail.com' },
+57 silly install resolved     license: 'MIT',
+57 silly install resolved     dependencies:
+57 silly install resolved      { 'cpu-profiler': 'git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+57 silly install resolved        'lodash.clone': '~2.4.1' },
+57 silly install resolved     devDependencies: { jshint: '~2.1.11', 'jshint-full-path': '~0.1.0' },
+57 silly install resolved     gitHead: '5fd0393ca9b79953a8ffef329eabafc8a29789f1',
+57 silly install resolved     _id: 'chrome-cpu-profiler@1.0.3',
+57 silly install resolved     _shasum: 'e6d4c0d7d6ab3c7b350e3a303728e41430d0af13',
+57 silly install resolved     _from: 'chrome-cpu-profiler@*',
+57 silly install resolved     _npmVersion: '2.13.3',
+57 silly install resolved     _nodeVersion: '3.2.0',
+57 silly install resolved     _npmUser: { name: 'tomgco', email: 'tomgallacher23@gmail.com' },
+57 silly install resolved     dist:
+57 silly install resolved      { shasum: 'e6d4c0d7d6ab3c7b350e3a303728e41430d0af13',
+57 silly install resolved        tarball: 'http://registry.npmjs.org/chrome-cpu-profiler/-/chrome-cpu-profiler-1.0.3.tgz' },
+57 silly install resolved     maintainers: [ [Object] ],
+57 silly install resolved     directories: {},
+57 silly install resolved     _resolved: 'https://registry.npmjs.org/chrome-cpu-profiler/-/chrome-cpu-profiler-1.0.3.tgz',
+57 silly install resolved     readme: 'ERROR: No README data found!' } ]
+58 info install chrome-cpu-profiler@1.0.3 into /Users/employee/telmate_dev/seejs
+59 info installOne chrome-cpu-profiler@1.0.3
+60 verbose installOne of chrome-cpu-profiler to /Users/employee/telmate_dev/seejs not in flight; installing
+61 verbose lock using /Users/employee/.npm/_locks/chrome-cpu-profiler-9b23ffa6fcd4c67a.lock for /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+62 silly install write writing chrome-cpu-profiler 1.0.3 to /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+63 verbose unbuild node_modules/chrome-cpu-profiler
+64 silly gentlyRm /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler is being purged from base /Users/employee/telmate_dev/seejs
+65 verbose gentlyRm don't care about contents; nuking /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+66 verbose tar unpack /Users/employee/.npm/chrome-cpu-profiler/1.0.3/package.tgz
+67 verbose tar unpacking to /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+68 silly gentlyRm /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler is being purged
+69 verbose gentlyRm don't care about contents; nuking /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+70 silly gunzTarPerm modes [ '755', '644' ]
+71 silly gunzTarPerm extractEntry package.json
+72 silly gunzTarPerm extractEntry .npmignore
+73 silly gunzTarPerm extractEntry README.md
+74 silly gunzTarPerm extractEntry LICENSE
+75 silly gunzTarPerm extractEntry index.js
+76 silly gunzTarPerm extractEntry .jshintignore
+77 silly gunzTarPerm extractEntry .jshintrc
+78 silly gunzTarPerm extractEntry example/cpu-blocking.js
+79 verbose write writing to /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler/package.json
+80 info preinstall chrome-cpu-profiler@1.0.3
+81 verbose readDependencies loading dependencies from /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler/package.json
+82 silly prepareForInstallMany adding cpu-profiler@git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0 from chrome-cpu-profiler dependencies
+83 silly prepareForInstallMany adding lodash.clone@~2.4.1 from chrome-cpu-profiler dependencies
+84 verbose readDependencies loading dependencies from /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler/package.json
+85 silly cache add args [ 'cpu-profiler@git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+85 silly cache add   null ]
+86 verbose cache add spec cpu-profiler@git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0
+87 silly cache add args [ 'lodash.clone@~2.4.1', null ]
+88 verbose cache add spec lodash.clone@~2.4.1
+89 silly cache add parsed spec { raw: 'lodash.clone@~2.4.1',
+89 silly cache add   scope: null,
+89 silly cache add   name: 'lodash.clone',
+89 silly cache add   rawSpec: '~2.4.1',
+89 silly cache add   spec: '>=2.4.1 <2.5.0',
+89 silly cache add   type: 'range' }
+90 silly addNamed lodash.clone@>=2.4.1 <2.5.0
+91 verbose addNamed ">=2.4.1 <2.5.0" is a valid semver range for lodash.clone
+92 silly addNameRange { name: 'lodash.clone', range: '>=2.4.1 <2.5.0', hasData: false }
+93 silly mapToRegistry name lodash.clone
+94 silly mapToRegistry using default registry
+95 silly mapToRegistry registry https://registry.npmjs.org/
+96 silly mapToRegistry uri https://registry.npmjs.org/lodash.clone
+97 verbose addNameRange registry:https://registry.npmjs.org/lodash.clone not in flight; fetching
+98 silly cache add parsed spec { raw: 'cpu-profiler@git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+98 silly cache add   scope: null,
+98 silly cache add   name: 'cpu-profiler',
+98 silly cache add   rawSpec: 'git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+98 silly cache add   spec: 'git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+98 silly cache add   type: 'hosted',
+98 silly cache add   hosted:
+98 silly cache add    { type: 'github',
+98 silly cache add      ssh: 'git@github.com:tomgco/strong-cpu-profiler.git#release/2.0.0',
+98 silly cache add      sshUrl: 'git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+98 silly cache add      httpsUrl: 'git+https://github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+98 silly cache add      gitUrl: 'git://github.com/tomgco/strong-cpu-profiler.git#release/2.0.0',
+98 silly cache add      shortcut: 'github:tomgco/strong-cpu-profiler#release/2.0.0',
+98 silly cache add      directUrl: 'https://raw.githubusercontent.com/tomgco/strong-cpu-profiler/release%2F2.0.0/package.json' } }
+99 verbose addRemoteGit caching git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0
+100 verbose addRemoteGit git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0 is a repository hosted by github
+101 silly tryClone cloning git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0 via git+ssh://git@github.com/tomgco/strong-cpu-profiler.git#release/2.0.0
+102 verbose tryClone ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1 not in flight; caching
+103 verbose request uri https://registry.npmjs.org/lodash.clone
+104 verbose request no auth needed
+105 info attempt registry request try #1 at 22:38:11
+106 verbose etag "BWWUA5Q1GV8NJD3X6EUZKKWXT"
+107 http request GET https://registry.npmjs.org/lodash.clone
+108 info git [ 'clone',
+108 info git   '--template=/Users/employee/.npm/_git-remotes/_templates',
+108 info git   '--mirror',
+108 info git   'ssh://git@github.com/tomgco/strong-cpu-profiler.git',
+108 info git   '/Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1' ]
+109 http 304 https://registry.npmjs.org/lodash.clone
+110 silly get cb [ 304,
+110 silly get   { date: 'Mon, 21 Dec 2015 21:38:11 GMT',
+110 silly get     via: '1.1 varnish',
+110 silly get     'cache-control': 'max-age=300',
+110 silly get     etag: '"BWWUA5Q1GV8NJD3X6EUZKKWXT"',
+110 silly get     age: '66',
+110 silly get     connection: 'keep-alive',
+110 silly get     'x-served-by': 'cache-lcy1131-LCY',
+110 silly get     'x-cache': 'HIT',
+110 silly get     'x-cache-hits': '1',
+110 silly get     'x-timer': 'S1450733891.509611,VS0,VE1',
+110 silly get     vary: 'Accept' } ]
+111 verbose etag https://registry.npmjs.org/lodash.clone from cache
+112 verbose get saving lodash.clone to /Users/employee/.npm/registry.npmjs.org/lodash.clone/.cache.json
+113 silly addNameRange number 2 { name: 'lodash.clone', range: '>=2.4.1 <2.5.0', hasData: true }
+114 silly addNameRange versions [ 'lodash.clone',
+114 silly addNameRange   [ '2.0.0',
+114 silly addNameRange     '2.1.0',
+114 silly addNameRange     '2.2.0',
+114 silly addNameRange     '2.2.1',
+114 silly addNameRange     '2.3.0',
+114 silly addNameRange     '2.4.0',
+114 silly addNameRange     '2.4.1',
+114 silly addNameRange     '3.0.0',
+114 silly addNameRange     '3.0.1',
+114 silly addNameRange     '3.0.2',
+114 silly addNameRange     '3.0.3' ] ]
+115 silly addNamed lodash.clone@2.4.1
+116 verbose addNamed "2.4.1" is a plain semver version for lodash.clone
+117 silly cache afterAdd lodash.clone@2.4.1
+118 verbose afterAdd /Users/employee/.npm/lodash.clone/2.4.1/package/package.json not in flight; writing
+119 verbose afterAdd /Users/employee/.npm/lodash.clone/2.4.1/package/package.json written
+120 error git clone --template=/Users/employee/.npm/_git-remotes/_templates --mirror ssh://git@github.com/tomgco/strong-cpu-profiler.git /Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1: Cloning into bare repository '/Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1'...
+120 error git clone --template=/Users/employee/.npm/_git-remotes/_templates --mirror ssh://git@github.com/tomgco/strong-cpu-profiler.git /Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1: Permission denied (publickey).
+120 error git clone --template=/Users/employee/.npm/_git-remotes/_templates --mirror ssh://git@github.com/tomgco/strong-cpu-profiler.git /Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1: fatal: Could not read from remote repository.
+120 error git clone --template=/Users/employee/.npm/_git-remotes/_templates --mirror ssh://git@github.com/tomgco/strong-cpu-profiler.git /Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1:
+120 error git clone --template=/Users/employee/.npm/_git-remotes/_templates --mirror ssh://git@github.com/tomgco/strong-cpu-profiler.git /Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1: Please make sure you have the correct access rights
+120 error git clone --template=/Users/employee/.npm/_git-remotes/_templates --mirror ssh://git@github.com/tomgco/strong-cpu-profiler.git /Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1: and the repository exists.
+121 verbose about to build /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+122 verbose unlock done using /Users/employee/.npm/_locks/chrome-cpu-profiler-9b23ffa6fcd4c67a.lock for /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+123 verbose stack Error: Command failed: Cloning into bare repository '/Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1'...
+123 verbose stack Permission denied (publickey).
+123 verbose stack fatal: Could not read from remote repository.
+123 verbose stack
+123 verbose stack Please make sure you have the correct access rights
+123 verbose stack and the repository exists.
+123 verbose stack
+123 verbose stack     at ChildProcess.exithandler (child_process.js:658:15)
+123 verbose stack     at ChildProcess.emit (events.js:98:17)
+123 verbose stack     at maybeClose (child_process.js:766:16)
+123 verbose stack     at Socket.<anonymous> (child_process.js:979:11)
+123 verbose stack     at Socket.emit (events.js:95:17)
+123 verbose stack     at Pipe.close (net.js:466:12)
+124 verbose cwd /Users/employee/telmate_dev/seejs
+125 error Darwin 14.5.0
+126 error argv "node" "/usr/local/bin/npm" "install" "--save" "chrome-cpu-profiler"
+127 error node v0.10.39
+128 error npm  v2.12.1
+129 error code 128
+130 error Command failed: Cloning into bare repository '/Users/employee/.npm/_git-remotes/ssh-git-github-com-tomgco-strong-cpu-profiler-git-ce02a7d1'...
+130 error Permission denied (publickey).
+130 error fatal: Could not read from remote repository.
+130 error
+130 error Please make sure you have the correct access rights
+130 error and the repository exists.
+131 error If you need help, you may report this error at:
+131 error     <https://github.com/npm/npm/issues>
+132 verbose exit [ 1, true ]
+133 verbose unbuild node_modules/chrome-cpu-profiler
+134 info preuninstall chrome-cpu-profiler@1.0.3
+135 info uninstall chrome-cpu-profiler@1.0.3
+136 verbose unbuild rmStuff chrome-cpu-profiler@1.0.3 from /Users/employee/telmate_dev/seejs/node_modules
+137 info postuninstall chrome-cpu-profiler@1.0.3
+138 silly gentlyRm /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler is being purged from base /Users/employee/telmate_dev/seejs
+139 verbose gentlyRm don't care about contents; nuking /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+140 silly vacuum-fs purging /Users/employee/telmate_dev/seejs/node_modules/chrome-cpu-profiler
+141 silly vacuum-fs quitting because other entries in /Users/employee/telmate_dev/seejs/node_modules

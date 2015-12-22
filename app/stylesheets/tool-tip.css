@@ -2,12 +2,14 @@
   line-height: 1;
   font-weight: bold;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border-radius: 2px;
+  background: #FFFFFF;/*rgba(0, 0, 0, 0.8);*/
+  /*color: #fff;*/
+  color: #000;
+  border-radius: 3px;
   pointer-events: none;
   text-align:center;
   margin-top:-8px;
+  border: 4px solid rgba(0, 0, 0, 0.8);
 }
 
 /* Creates a small triangle extender for the tooltip */
@@ -24,6 +26,7 @@
 
 /* Northward tooltips */
 .d3-tip.n:after {
+  font-size: 14px;
   content: "\25BC";
   margin: -1px 0 0 0;
   top: 100%;
@@ -55,3 +58,53 @@
   top: 50%;
   left: 100%;
 }
+
+/*css transitions*/
+@-webkit-keyframes bounceIn {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(.3);
+  }
+
+  50% {
+    opacity: 1;
+    -webkit-transform: scale(1.05);
+  }
+
+  70% {
+    -webkit-transform: scale(.9);
+  }
+
+  100% {
+    -webkit-transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  70% {
+    transform: scale(.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+body {
+  -webkit-backface-visibility: hidden;
+}
+
+.d3-tip.animate {
+    animation: bounceIn 0.2s ease-out;
+    -webkit-animation: bounceIn 0.2s ease-out;
+  }

@@ -213,10 +213,11 @@
       .on("click", onCircleClick)
       .on('mouseover', function(d) {
         if (d.name !== 'root' && d.type !== 'hidden' && d.name !== '[Anonymous]') {
-          tip.show(d);
+          tip.attr('class', 'd3-tip animate').show(d);
         }
       })
       .on('mouseout', function (d) {
+        tip.attr('class', 'd3-tip').show(d)
         tip.hide();
       });
 
@@ -238,11 +239,11 @@
     
     labels.attr("class", getClass)
       .text(getLabelText)
-      .attr("x", function(d) { return d.x; })
-      .attr("y", function(d) { return d.y; })
       .transition()
-        .duration(500)
-        .style("opacity", getLabelOpacity);
+        .duration(750)
+        .style("opacity", getLabelOpacity)
+        .attr("x", function(d) { return d.x; })
+      .attr("y", function(d) { return d.y; });
       
     labels
       .enter().append("svg:text")
@@ -716,27 +717,30 @@ function goToSourcePage() {
 
 var showEditor = false;
 
-$(document).ready(function(){
-  // $(".editor-wrapper").on("hide.bs.collapse", function(){
-  //   $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-full"></span> Show Code')
-  //     .attr('class', 'side-bar-button btn btn-lg btn-info pull-right');
-  //     showEditor = false;
-  // });
-  // $(".editor-wrapper").on("show.bs.collapse", function(){
-  //   $(".side-bar-button").html('<span class="glyphicon glyphicon-resize-small"></span> Hide Code')
-  //     .attr('class', 'side-bar-button btn btn-lg pull-right btn-danger');
-  //     showEditor = true;
-  // });
+function showCode () {
+  $('#side-bar').fadeIn().height($('.bubble-chart').height());
+  showEditor = true;
+}
 
-  $('.action-menu #show-code').click(function () {
-    $('#side-bar').fadeIn().height($('.bubble-chart').height());
-    showEditor = true;
-  });
+function hideCode () {
+  $("#side-bar").fadeOut();
+  showEditor = false;
+}
 
-  $(".close-editor-button").click(function () {
-    $("#side-bar").fadeOut();
-    showEditor = false;
-  });
+function toggleCode () {
+  if (showEditor) {
+    hideCode();
+  } else {
+    showCode();
+  }
+}
+
+
+
+$(document).ready(function () {
+  $('.show-code').click(toggleCode);
+
+  $(".close-editor-button").click(hideCode);
   $(".webpage-title").click(goToSourcePage);
 
   $( ".editor-wrapper" ).resizable({
@@ -750,8 +754,6 @@ $(document).ready(function(){
         console.log("called editor.resize()");
       }
     });
-
-
 });
 
 var resizeDelayTimer;

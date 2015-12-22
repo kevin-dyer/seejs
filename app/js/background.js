@@ -64,6 +64,7 @@ function buildCodeTree () {
 
   codeTree = {name: "root", myChildren: [], parent: null, type: "root"};
 
+
   for (i = 0; i < sourceLength; i++) {
 
     // if (fileList && sourceCode[i].type === 'file' && !fileList[fileIndex++]) {
@@ -82,6 +83,7 @@ function buildCodeTree () {
     console.log(i + ". Adding " + sourceCode[i].name);
     //console.log("building esprima tree");
     tree = esprima.parse(code, { range: true, loc: true});
+    console.log("esprima tree: ", tree);
     //console.log("building function tree");
     fileNode = tracer.getFunctionTree(tree, code, sourceCode[i]);
     fileNode.parent = codeTree;
@@ -280,7 +282,9 @@ chrome.extension.onConnect.addListener(function(port) {
     if (msg.type === "goAction") {
       port.postMessage("fired visualizeSourceCode");
 
-      if (msg.settings && msg.settings.settings && msg.settings.settings.unminify){
+      console.log("msg settings: ", msg.settings);
+
+      if (msg.settings && msg.settings.unminify){
         unminifySourceCode();
       }
 
