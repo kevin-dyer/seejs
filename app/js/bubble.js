@@ -271,6 +271,9 @@
   }
 
   function onCircleClick (d, i) {
+    if (d3.event.defaultPrevented) {
+      return;
+    }
     //clean up old selection:
     d3.select(".selected").style("stroke", getBorderColor)
       .classed("selected", false);
@@ -331,11 +334,12 @@
 
   //var zoomScale;
   var oldZoomScale = 1;
-  
+
   function zoomEnded (e) {
     var zoomScale = zoom.scale();
 
     if (zoomScale === oldZoomScale) {
+      d3.event.sourceEvent.preventDefault();
       return;
     }
 
