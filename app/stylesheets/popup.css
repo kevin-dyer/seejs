@@ -24,7 +24,6 @@ body {
 
 .script-list-container {
   min-height: 300px;
-  max-height: 500px;
   overflow-y:scroll;
 }
 
@@ -91,15 +90,14 @@ body {
 
 .script-list-container .script-item .script-name-container .script-name {
   word-wrap: break-word;
-  overflow: hidden;
-  white-space: nowrap;
+  /*overflow: hidden;
+  white-space: nowrap;*/
   text-overflow: ellipsis;
 }
 
 .script-list-container .script-item .script-name-container .script-name.active {
-  /*word-wrap: break-word;*/
-  overflow: visible;
-  white-space: normal;
+  /*overflow: visible;
+  white-space: normal;*/
 }
 
 .script-list-container .script-item .script-name-container .script-name.text-muted {

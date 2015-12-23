@@ -14,16 +14,52 @@ var CheckboxItemComponent = React.createClass({
 
   getInitialState: function () {
     return ({
-      hover: false
+      hover: false,
+      itemRef: null,
+      expandedHeight: null,
+      collapsedHeight: null
     });
   },
 
   handleMouseEnter: function () {
-    this.setState({hover: true})
+    this.setState({hover: true});
+    this.state.itemRef.css({
+      'height': this.state.expandedHeight,
+      'overflow': 'visible',
+      'white-space': 'normal'
+    });
   },
 
   handleMouseLeave: function () {
     this.setState({hover: false});
+    this.state.itemRef.css({
+      'height': this.state.collapsedHeight,
+      'overflow': 'hidden',
+      'white-space': 'nowrap'
+    });
+  },
+
+  setHeight: function (item) {
+    var itemRef = $(item),
+        expandedHeight = itemRef.outerHeight(),
+        collapsedHeight;
+
+    itemRef.css({
+      'opacity': 0,
+      'overflow': 'hidden',
+      'white-space': 'nowrap'
+    });
+    collapsedHeight = itemRef.outerHeight();
+    itemRef.css({
+      'height': collapsedHeight,
+      'opacity': 1,
+      'transition': 'height 1s'
+    });
+    this.setState({
+      itemRef: itemRef,
+      expandedHeight: expandedHeight,
+      collapsedHeight: collapsedHeight
+    });
   },
 
   getCheckContainerClassName: function () {
@@ -47,7 +83,7 @@ var CheckboxItemComponent = React.createClass({
   },
 
   getItemClassName: function () {
-    var itemClassName = this.state.hover ? 'script-name active' : 'script-name';
+    var itemClassName = this.state.hover && this.props.type !== 'setting' ? 'script-name active' : 'script-name';
 
     if (!this.props.checked) {
       itemClassName += ' text-muted';
@@ -76,7 +112,7 @@ var CheckboxItemComponent = React.createClass({
 
   render: function () {
     return (
-      <li 
+      <li
         className='list-group-item script-file script-item'
         onClick={this.props.clickHandler}
         onMouseEnter={this.handleMouseEnter}
@@ -84,7 +120,10 @@ var CheckboxItemComponent = React.createClass({
 
         <div className={this.getCheckContainerClassName()}></div>
         <div className="script-name-container" >
-          <div className={this.getItemClassName()}>
+          <div
+            className={this.getItemClassName()}
+            ref={this.setHeight} >
+
             {this.props.content}
           </div>
           {this.getBadge()}

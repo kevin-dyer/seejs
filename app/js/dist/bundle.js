@@ -117,16 +117,52 @@ var CheckboxItemComponent = React.createClass({
 
   getInitialState: function getInitialState() {
     return {
-      hover: false
+      hover: false,
+      itemRef: null,
+      expandedHeight: null,
+      collapsedHeight: null
     };
   },
 
   handleMouseEnter: function handleMouseEnter() {
     this.setState({ hover: true });
+    this.state.itemRef.css({
+      'height': this.state.expandedHeight,
+      'overflow': 'visible',
+      'white-space': 'normal'
+    });
   },
 
   handleMouseLeave: function handleMouseLeave() {
     this.setState({ hover: false });
+    this.state.itemRef.css({
+      'height': this.state.collapsedHeight,
+      'overflow': 'hidden',
+      'white-space': 'nowrap'
+    });
+  },
+
+  setHeight: function setHeight(item) {
+    var itemRef = $(item),
+        expandedHeight = itemRef.outerHeight(),
+        collapsedHeight;
+
+    itemRef.css({
+      'opacity': 0,
+      'overflow': 'hidden',
+      'white-space': 'nowrap'
+    });
+    collapsedHeight = itemRef.outerHeight();
+    itemRef.css({
+      'height': collapsedHeight,
+      'opacity': 1,
+      'transition': 'height 1s'
+    });
+    this.setState({
+      itemRef: itemRef,
+      expandedHeight: expandedHeight,
+      collapsedHeight: collapsedHeight
+    });
   },
 
   getCheckContainerClassName: function getCheckContainerClassName() {
@@ -146,7 +182,7 @@ var CheckboxItemComponent = React.createClass({
   },
 
   getItemClassName: function getItemClassName() {
-    var itemClassName = this.state.hover ? 'script-name active' : 'script-name';
+    var itemClassName = this.state.hover && this.props.type !== 'setting' ? 'script-name active' : 'script-name';
 
     if (!this.props.checked) {
       itemClassName += ' text-muted';
@@ -189,7 +225,9 @@ var CheckboxItemComponent = React.createClass({
         { className: 'script-name-container' },
         React.createElement(
           'div',
-          { className: this.getItemClassName() },
+          {
+            className: this.getItemClassName(),
+            ref: this.setHeight },
           this.props.content
         ),
         this.getBadge()
