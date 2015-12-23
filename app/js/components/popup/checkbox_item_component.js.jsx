@@ -62,6 +62,16 @@ var CheckboxItemComponent = React.createClass({
     });
   },
 
+  getListItemClassName: function () {
+    var name = 'list-group-item script-file script-item';
+
+    if (this.props.type === 'setting') {
+      name += ' setting-item';
+    }
+
+    return name;
+  },
+
   getCheckContainerClassName: function () {
     var checkContainerClassName,
         checked = this.props.checked,
@@ -82,7 +92,7 @@ var CheckboxItemComponent = React.createClass({
     return checkContainerClassName;
   },
 
-  getItemClassName: function () {
+  getScriptNameClassName: function () {
     var itemClassName = this.state.hover && this.props.type !== 'setting' ? 'script-name active' : 'script-name';
 
     if (!this.props.checked) {
@@ -113,7 +123,7 @@ var CheckboxItemComponent = React.createClass({
   render: function () {
     return (
       <li
-        className='list-group-item script-file script-item'
+        className={this.getListItemClassName()}
         onClick={this.props.clickHandler}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave} >
@@ -121,7 +131,7 @@ var CheckboxItemComponent = React.createClass({
         <div className={this.getCheckContainerClassName()}></div>
         <div className="script-name-container" >
           <div
-            className={this.getItemClassName()}
+            className={this.getScriptNameClassName()}
             ref={this.setHeight} >
 
             {this.props.content}

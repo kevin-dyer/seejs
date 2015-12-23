@@ -2,7 +2,6 @@ var React = require('../../../../node_modules/react'),
     DynamicScriptsComponent = require('./dynamic_scripts_component.js.jsx'),
     SettingsComponent = require('./settings_component.js.jsx'),
     ActionButtonsComponent = require('./action_buttons_component.js.jsx'),
-    //visualizeSourceCode = chrome.extension.getBackgroundPage().visualizeSourceCode;
     port = chrome.extension.connect({name: "Sample Communication"});
 
 var PopupComponent = React.createClass({
@@ -27,8 +26,9 @@ var PopupComponent = React.createClass({
     });
   },
 
+  //TODO: update settings in background
   updateSettings: function (settings) {
-    console.log("udating settings!");
+    console.log("udating settings: ", settings);
     this.setState({settings: settings});
   },
   

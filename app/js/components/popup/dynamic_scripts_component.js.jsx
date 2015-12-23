@@ -19,16 +19,12 @@ var DynamicScriptsComponent = React.createClass({
   },
 
   componentWillMount: function () {
-    var self = this,
-        background = chrome.extension.getBackgroundPage();
-
-    // BIG TODO: call background to get the scripts,
-    // the background script should decide if it already has the scripts for that page. 
-    // And if so, just return them again.
-    // If the current page is a chrome extension, just show the existing script lists from the background
+    var self = this;
+    
     console.log("getting script tags");
-
-    background.getScriptTags();
+    this.props.messageBackground({
+      type: 'getScriptTags'
+    });
 
     chrome.runtime.onMessage.addListener(
       function(request, sender, sendResponse) {
@@ -100,23 +96,60 @@ var DynamicScriptsComponent = React.createClass({
     this.setState({fileHover: fileHover});
   },
 
-  // getSizeLabel: function (stringLength) {
-  //   var label;
+  //TODO: replace with setListCheckState
+  // setAllInlineScripts: function (checkState) {
+  //   var inlineScriptList = this.state.inlineScriptList.map(function (script) {
+  //     script.checked = checkState;
+  //     return script;
+  //   });
 
-  //   if (stringLength < 100) {
-  //     label = 'xs';
-  //   } else if (stringLength < 1000) {
-  //     label = 'sm';
-  //   } else if (stringLength < 10000) {
-  //     label = 'md';
-  //   } else if (stringLength < 100000) {
-  //     label = 'lg';
-  //   } else if (stringLength < 1000000) {
-  //     label = 'xl';
-  //   }
-  //   return label;
-  //   //return stringLength;
+  //   this.setState({inlineScriptList: inlineScriptList});
   // },
+
+  // setAllFileScripts: function (checkState) {
+  //   var fileList = this.state.fileList.map(function (script) {
+  //     script.checked = checkState;
+  //     return script;
+  //   });
+
+  //   this.setState({fileList: fileList});
+  // },
+
+  setListCheckState: function (listType, checkState) {
+    var self = this,
+        list = this.state[listType].map(function (script) {
+          script.checked = checkState;
+          return script;
+        });
+    this.setState({listType: list}, function () {
+      self.props.messageBackground({
+        type: 'updateMultipleScripts',
+        scriptList: this.state[listType]
+      });
+    });
+  },
+
+  allScriptsChecked: function (scriptList) {
+    var i,
+        scriptLength = scriptList.length;
+
+    for (i = 0; i < scriptLength; i++) {
+      if (!scriptList[i].checked) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  toggleListCheckState: function (listType) {
+    var list = this.state[listType];
+
+    if (this.allScriptsChecked(list)) {
+      this.setListCheckState(listType, false);
+    } else {
+      this.setListCheckState(listType, true);
+    }
+  },
 
   render: function () {
     var self = this,
@@ -152,7 +185,9 @@ var DynamicScriptsComponent = React.createClass({
         <div className="file-list-container">
           <h6 className="file-list-title">
             Source Files
-            <span className="pull-right size-title">size</span>
+            <a className="pull-right size-title link" onClick={this.toggleListCheckState.bind(self, 'fileList')}>
+              {self.allScriptsChecked(self.state.fileList) ? 'Unselect All' : 'Select All'}
+            </a>
             <div className="clearfix"></div>
           </h6>
           <ul className="file-list list-group">
@@ -177,10 +212,15 @@ var DynamicScriptsComponent = React.createClass({
         );
       });
 
+      //TODO: break out select all link into component
       inlineScriptListContainer = (
         <div className="inline-script-list-container">
           <h6 className="file-list-title">
             Inline Scripts
+            <a className="pull-right size-title link" onClick={this.toggleListCheckState.bind(self, 'inlineScriptList')}>
+              {self.allScriptsChecked(self.state.inlineScriptList) ? 'Unselect All' : 'Select All'}
+            </a>
+            <div className="clearfix"></div>
           </h6>
           <ul className="inline-script-list list-group">
             {inlineScriptList}

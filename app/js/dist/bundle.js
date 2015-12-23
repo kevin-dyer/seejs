@@ -165,6 +165,16 @@ var CheckboxItemComponent = React.createClass({
     });
   },
 
+  getListItemClassName: function getListItemClassName() {
+    var name = 'list-group-item script-file script-item';
+
+    if (this.props.type === 'setting') {
+      name += ' setting-item';
+    }
+
+    return name;
+  },
+
   getCheckContainerClassName: function getCheckContainerClassName() {
     var checkContainerClassName,
         checked = this.props.checked,
@@ -181,7 +191,7 @@ var CheckboxItemComponent = React.createClass({
     return checkContainerClassName;
   },
 
-  getItemClassName: function getItemClassName() {
+  getScriptNameClassName: function getScriptNameClassName() {
     var itemClassName = this.state.hover && this.props.type !== 'setting' ? 'script-name active' : 'script-name';
 
     if (!this.props.checked) {
@@ -215,7 +225,7 @@ var CheckboxItemComponent = React.createClass({
     return React.createElement(
       'li',
       {
-        className: 'list-group-item script-file script-item',
+        className: this.getListItemClassName(),
         onClick: this.props.clickHandler,
         onMouseEnter: this.handleMouseEnter,
         onMouseLeave: this.handleMouseLeave },
@@ -226,7 +236,7 @@ var CheckboxItemComponent = React.createClass({
         React.createElement(
           'div',
           {
-            className: this.getItemClassName(),
+            className: this.getScriptNameClassName(),
             ref: this.setHeight },
           this.props.content
         ),
@@ -263,16 +273,12 @@ var DynamicScriptsComponent = React.createClass({
   },
 
   componentWillMount: function componentWillMount() {
-    var self = this,
-        background = chrome.extension.getBackgroundPage();
+    var self = this;
 
-    // BIG TODO: call background to get the scripts,
-    // the background script should decide if it already has the scripts for that page.
-    // And if so, just return them again.
-    // If the current page is a chrome extension, just show the existing script lists from the background
     console.log("getting script tags");
-
-    background.getScriptTags();
+    this.props.messageBackground({
+      type: 'getScriptTags'
+    });
 
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
@@ -341,23 +347,60 @@ var DynamicScriptsComponent = React.createClass({
     this.setState({ fileHover: fileHover });
   },
 
-  // getSizeLabel: function (stringLength) {
-  //   var label;
+  //TODO: replace with setListCheckState
+  // setAllInlineScripts: function (checkState) {
+  //   var inlineScriptList = this.state.inlineScriptList.map(function (script) {
+  //     script.checked = checkState;
+  //     return script;
+  //   });
 
-  //   if (stringLength < 100) {
-  //     label = 'xs';
-  //   } else if (stringLength < 1000) {
-  //     label = 'sm';
-  //   } else if (stringLength < 10000) {
-  //     label = 'md';
-  //   } else if (stringLength < 100000) {
-  //     label = 'lg';
-  //   } else if (stringLength < 1000000) {
-  //     label = 'xl';
-  //   }
-  //   return label;
-  //   //return stringLength;
+  //   this.setState({inlineScriptList: inlineScriptList});
   // },
+
+  // setAllFileScripts: function (checkState) {
+  //   var fileList = this.state.fileList.map(function (script) {
+  //     script.checked = checkState;
+  //     return script;
+  //   });
+
+  //   this.setState({fileList: fileList});
+  // },
+
+  setListCheckState: function setListCheckState(listType, checkState) {
+    var self = this,
+        list = this.state[listType].map(function (script) {
+      script.checked = checkState;
+      return script;
+    });
+    this.setState({ listType: list }, function () {
+      self.props.messageBackground({
+        type: 'updateMultipleScripts',
+        scriptList: this.state[listType]
+      });
+    });
+  },
+
+  allScriptsChecked: function allScriptsChecked(scriptList) {
+    var i,
+        scriptLength = scriptList.length;
+
+    for (i = 0; i < scriptLength; i++) {
+      if (!scriptList[i].checked) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  toggleListCheckState: function toggleListCheckState(listType) {
+    var list = this.state[listType];
+
+    if (this.allScriptsChecked(list)) {
+      this.setListCheckState(listType, false);
+    } else {
+      this.setListCheckState(listType, true);
+    }
+  },
 
   render: function render() {
     var self = this,
@@ -393,9 +436,9 @@ var DynamicScriptsComponent = React.createClass({
           { className: 'file-list-title' },
           'Source Files',
           React.createElement(
-            'span',
-            { className: 'pull-right size-title' },
-            'size'
+            'a',
+            { className: 'pull-right size-title link', onClick: this.toggleListCheckState.bind(self, 'fileList') },
+            self.allScriptsChecked(self.state.fileList) ? 'Unselect All' : 'Select All'
           ),
           React.createElement('div', { className: 'clearfix' })
         ),
@@ -420,13 +463,20 @@ var DynamicScriptsComponent = React.createClass({
           messageBackground: messageBackground });
       });
 
+      //TODO: break out select all link into component
       inlineScriptListContainer = React.createElement(
         'div',
         { className: 'inline-script-list-container' },
         React.createElement(
           'h6',
           { className: 'file-list-title' },
-          'Inline Scripts'
+          'Inline Scripts',
+          React.createElement(
+            'a',
+            { className: 'pull-right size-title link', onClick: this.toggleListCheckState.bind(self, 'inlineScriptList') },
+            self.allScriptsChecked(self.state.inlineScriptList) ? 'Unselect All' : 'Select All'
+          ),
+          React.createElement('div', { className: 'clearfix' })
         ),
         React.createElement(
           'ul',
@@ -455,9 +505,7 @@ var React = require('../../../../node_modules/react'),
     DynamicScriptsComponent = require('./dynamic_scripts_component.js.jsx'),
     SettingsComponent = require('./settings_component.js.jsx'),
     ActionButtonsComponent = require('./action_buttons_component.js.jsx'),
-
-//visualizeSourceCode = chrome.extension.getBackgroundPage().visualizeSourceCode;
-port = chrome.extension.connect({ name: "Sample Communication" });
+    port = chrome.extension.connect({ name: "Sample Communication" });
 
 var PopupComponent = React.createClass({
   displayName: 'PopupComponent',
@@ -483,8 +531,9 @@ var PopupComponent = React.createClass({
     });
   },
 
+  //TODO: update settings in background
   updateSettings: function updateSettings(settings) {
-    console.log("udating settings!");
+    console.log("udating settings: ", settings);
     this.setState({ settings: settings });
   },
 
@@ -612,11 +661,9 @@ var SettingsComponent = React.createClass({
   toggleUnminifySetting: function toggleUnminifySetting() {
     var settings = this.props.settings;
 
-    console.log("toggleUnminifySetting!!!");
-
     settings.unminify = !settings.unminify;
 
-    this.props.updateSettings({ settings: settings });
+    this.props.updateSettings(settings);
   },
 
   render: function render() {

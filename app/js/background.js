@@ -179,6 +179,10 @@ function updateSourceCode (script) {
 
 }
 
+function updateMultipleScripts (msg) {
+  msg.scriptList.forEach(updateSourceCode);
+}
+
 // TODO: need to use codeTree to build modified code rather than sourceCode,
 // otherwise will have to recreate the codeTree to do this...
 //
@@ -279,7 +283,9 @@ chrome.extension.onConnect.addListener(function(port) {
   console.log("Connected ..... port sender: ", port.sender);
   port.onMessage.addListener(function(msg) {
     console.log("background got a message: ", msg);
-    if (msg.type === "goAction") {
+    if (msg.type === 'getScriptTags') {
+      getScriptTags();
+    } else if (msg.type === "goAction") {
       port.postMessage("fired visualizeSourceCode");
 
       console.log("msg settings: ", msg.settings);
@@ -296,14 +302,8 @@ chrome.extension.onConnect.addListener(function(port) {
       
     } else if (msg.type === 'updateSourceCode') {
       updateSourceCode(msg);
-    // } else if (msg.type === "fileListUpdate") {
-    //   console.log("fileList update recieved"+ msg);
-    //   updateFileList(msg.fileList);
-    //   port.postMessage("fired updateFileList");
-    // } else if (msg.type === 'inlineScriptListUpdate') {
-    //   console.log("inlineScript update recieved"+ msg);
-    //   updateInlineScriptList(msg.inlineScriptList);
-    //   port.postMessage("fired updateInlineScriptList");
+    } else if (msg.type === 'updateMultipleScripts') {
+      updateMultipleScripts(msg);
     }
   });
 });

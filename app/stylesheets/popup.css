@@ -35,13 +35,28 @@ body {
   margin-right: 28px;
 }
 
+.script-list-container .size-title.link {
+  cursor: pointer;
+}
+
 .script-list-container .script-item.list-group-item {
   border-color: #FFFFFF;
   border-radius: 4px;
   padding-left: 0;
   padding-right: 0;
   cursor: pointer;
+}
 
+.script-list-container .script-item:hover {
+  background-color: #F5F5F5;
+}
+
+.script-list-container .script-item.list-group-item.setting-item {
+  background-color: #F5F5F5;
+}
+
+.script-list-container .script-item.list-group-item.setting-item:hover {
+  background-color: #E3E3E3;
 }
 
 .script-list-container .script-item .script-check {
@@ -76,9 +91,7 @@ body {
   opacity: 0;
 }
 
-.script-list-container .script-item:hover {
-  background-color: #F5F5F5;
-}
+
 
 .script-list-container .script-item .script-name-container {
   width: 100%;

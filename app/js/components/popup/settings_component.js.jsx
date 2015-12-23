@@ -11,12 +11,10 @@ var SettingsComponent = React.createClass({
 
   toggleUnminifySetting: function (){
     var settings = this.props.settings;
-
-    console.log("toggleUnminifySetting!!!");
     
     settings.unminify = !settings.unminify;
 
-    this.props.updateSettings({settings: settings});
+    this.props.updateSettings(settings);
   },
   
 
