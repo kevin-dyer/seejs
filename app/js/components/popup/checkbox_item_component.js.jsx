@@ -5,7 +5,8 @@ var CheckboxItemComponent = React.createClass({
   getDefaultProps: function () {
     return ({
       checked: false,
-      type: 'xsScript', //xsScript - xxlScript, setting 
+      type: 'xsScript', //xsScript - xxlScript, setting
+      scriptType: 'file', //inlineScript || file || undefined
       content: '',
       badgeContent: '',
       clickHandler: null
@@ -102,6 +103,23 @@ var CheckboxItemComponent = React.createClass({
     return itemClassName;
   },
 
+  getContent: function () {
+    // console.log("scriptType: ", this.props.scriptType, ", codePreview: ", this.props.codePreview, ", hover: ", this.state.hover);
+    // if (this.props.codePreview && this.state.hover) {
+    //   return this.props.codePreview;
+    // } else {
+    //   return this.props.content;
+    // }
+
+    return (
+      <span>
+        {this.props.content}
+        {this.props.codePreview ? <br/> : null}
+        {this.props.codePreview}
+      </span>
+    );
+  },
+
   getBadge: function () {
     if (this.props.badgeContent) {
       return (
@@ -134,7 +152,7 @@ var CheckboxItemComponent = React.createClass({
             className={this.getScriptNameClassName()}
             ref={this.setHeight} >
 
-            {this.props.content}
+            {this.getContent()}
           </div>
           {this.getBadge()}
         </div>

@@ -264,9 +264,20 @@ function getScriptListForPopup () {
       name: sourceItem.name, 
       size: sourceItem.size, 
       type: sourceItem.type,
+      preview: sourceItem.type === 'inlineScript' ? getSouceCodePreview(sourceItem.code, 250) : null,
       checked: sourceItem.checked
     };
   });
+}
+
+function getSouceCodePreview (code, maxLength) {
+  var preview = code.slice(0, maxLength);
+
+  if (code.length > maxLength) {
+    preview += '...';
+  }
+
+  return preview;
 }
 
 function sendScriptListToPopup () {

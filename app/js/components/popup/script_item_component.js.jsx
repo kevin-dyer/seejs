@@ -59,7 +59,9 @@ var ScriptItemComponent = React.createClass({
       <CheckboxItemComponent
         checked={script.checked}
         type={sizeLabel + 'Script'}
+        scriptType={script.type}
         content={script.name}
+        codePreview={script.preview}
         badgeContent={sizeLabel}
         clickHandler={this.updateScriptItem} />
     );

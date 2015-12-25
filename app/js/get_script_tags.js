@@ -11,7 +11,8 @@
       eleScr,
       eleHTML,
       uniqueKey = 0,
-      hasAjaxContent;
+      hasAjaxContent,
+      inlineIndex = 0;
 
   for (i = 0; i < filesLength; i++) {
     ele = scriptFiles[i],
@@ -19,7 +20,7 @@
     eleHTML = ele.innerHTML;
     console.log("processing Ele: ", eleSrc);
     if (eleHTML) {
-      sourceCode.push({uniqueKey: uniqueKey++, name: "Inline Script", size: eleHTML.length, type: "inlineScript", code: eleHTML});
+      sourceCode.push({uniqueKey: uniqueKey++, name: "Inline Script " + ++inlineIndex, size: eleHTML.length, type: "inlineScript", code: eleHTML});
     } else if (eleSrc) {
       hasAjaxContent = true;
       loadXMLDoc(eleSrc, 
