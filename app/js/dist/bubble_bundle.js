@@ -1,9 +1,13 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+"use strict";
+
 'use script';
 
 (function (exports) {
   var container = document.getElementsByClassName("page-content")[0],
-      // w = h = r = container.offsetWidth > container.offsetHeight ? container.offsetHeight : container.offsetWidth,
-      w = container.offsetWidth - 40,
+
+  // w = h = r = container.offsetWidth > container.offsetHeight ? container.offsetHeight : container.offsetWidth,
+  w = container.offsetWidth - 40,
       h = container.offsetHeight - 40,
       r = w > h ? h : w,
       x = d3.scale.linear().range([0, r]),
@@ -11,28 +15,24 @@
       root,
       node,
       nodes,
-
-      fontScale = d3.scale.linear()
-            .domain([1, r])
-            .range([6, 18]),
-
+      fontScale = d3.scale.linear().domain([1, r]).range([6, 18]),
       editor = ace.edit("editor"),
       currentEditorNode,
       currentEditorLoc,
 
-      //brewer color solid color scale
-      colorList = ['rgb(247,251,255)','rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
-      colorListLength = colorList.length, //9
+  //brewer color solid color scale
+  colorList = ['rgb(247,251,255)', 'rgb(222,235,247)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(66,146,198)', 'rgb(33,113,181)', 'rgb(8,81,156)', 'rgb(8,48,107)'],
+      colorListLength = colorList.length,
+      //9
 
-      //colors:
-      backgroundColor = "#FFF",
+  //colors:
+  backgroundColor = "#FFF",
       selfBorderColor = "#f33",
       depBorderColor = "black",
       defaultBorderColor = "#1C5787",
       anonymousBorderColor = "#ffcf40",
       noDepBorderColor = "steelblue",
       fileBorderColor = colorList[8],
-
       defaultFillColor = "#1f77b4",
       selfFillColor = defaultFillColor,
       depFillColor = colorList[7],
@@ -41,47 +41,27 @@
       noChildFillColor = "#ccc",
       fileFIllColor = colorList[1],
       pathColor = "#FFFFFF",
-
       fillColorList = d3.scale.category10().range(),
       fillColorListLength = fillColorList.length;
 
-  function fillColor (domain) {
+  function fillColor(domain) {
     return fillColorList[domain % fillColorListLength];
   };
 
   // //init colorScale with index 0
   // fillColor(0);
 
-  var pack = d3.layout.pack()
-        .sort(null)
-        .size([r, r])
-        .padding(2)
-        .value(function(d) { 
-          if (d.range) {
-            return d.range[1] - d.range[0];
-          } else {
-            return 1;
-          }
-        });
+  var pack = d3.layout.pack().sort(null).size([r, r]).padding(2).value(function (d) {
+    if (d.range) {
+      return d.range[1] - d.range[0];
+    } else {
+      return 1;
+    }
+  });
 
-  var zoom = d3.behavior.zoom()
-    .translate([0, 0])
-    .center(null)
-    .scaleExtent([1, 50])
-    .size([w, h])
-    .on("zoom", zoomed)
-    .on("zoomstart", zoomStarted)
-    .on("zoomend", zoomEnded);
+  var zoom = d3.behavior.zoom().translate([0, 0]).center(null).scaleExtent([1, 50]).size([w, h]).on("zoom", zoomed).on("zoomstart", zoomStarted).on("zoomend", zoomEnded);
 
-  var vis = d3.select("svg.bubble-chart")
-        .attr("width", w)
-        .attr("height", h)
-        .attr("opacity", 1)
-        .append("svg:g")
-        .attr("class", "outter-g")
-        .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
-        .call(zoom)
-        .append("svg:g");
+  var vis = d3.select("svg.bubble-chart").attr("width", w).attr("height", h).attr("opacity", 1).append("svg:g").attr("class", "outter-g").attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")").call(zoom).append("svg:g");
 
   /* Initialize tooltip */
   var tip = d3.tip().attr('class', 'd3-tip').html(getToolTipText);
@@ -89,7 +69,7 @@
 
   $("svg.bubble-chart").css("opacity", 1);
 
-//for editor 
+  //for editor
   editor.resize(true);
   editor.setAnimatedScroll(true);
 
@@ -101,16 +81,16 @@
     highlightCircle(selectedCircle);
   });
 
-  function getNodeFromEditorPosition (cursorIndex) {
+  function getNodeFromEditorPosition(cursorIndex) {
     var smallestNode = findSmallestWrappingNode(cursorIndex, currentEditorNode);
-    
+
     if (smallestNode) {
       return $("#n" + smallestNode.uniqueId)[0];
-    } 
+    }
     console.log("smallestNode does NOT exist");
   }
 
-  function findSmallestWrappingNode (cursorIndex, tmpNode) {
+  function findSmallestWrappingNode(cursorIndex, tmpNode) {
     var tmpChildren = tmpNode.children,
         tmpChild;
 
@@ -118,7 +98,7 @@
       return tmpNode;
     }
 
-    for(var i=0, l = tmpChildren.length; i < l; i++) {
+    for (var i = 0, l = tmpChildren.length; i < l; i++) {
       tmpChild = tmpChildren[i];
       if (insideNode(cursorIndex, tmpChild)) {
         tmpNode = findSmallestWrappingNode(cursorIndex, tmpChild);
@@ -129,7 +109,7 @@
   }
 
   //returns boolean if current position is inside node
-  function insideNode (cursorIndex, testNode) {
+  function insideNode(cursorIndex, testNode) {
     var treeNode = testNode.treeNode,
         range = treeNode ? treeNode.range : null,
         start,
@@ -146,144 +126,102 @@
     return false;
   }
 
-  function highlightCircle (selectedCircle) {
+  function highlightCircle(selectedCircle) {
     var zoomScale = zoom.scale();
 
-    d3.select(".selected").style("stroke", getBorderColor)
-      .classed("selected", false);
+    d3.select(".selected").style("stroke", getBorderColor).classed("selected", false);
 
-    d3.select(selectedCircle)
-      .classed("selected", true)
-      .style("opacity", 1)
-      .style("stroke", "#000000")
-      .transition()
-        .duration(750)
-        .style("stroke-width", (5 / zoomScale))
-        .attr("r", function (d) {
-          return d.r + 30 / zoomScale;
-        })
-      .transition()
-        .delay(750)
-        .style("stroke-width", getBorderWidth)
-        .style("stroke", selfBorderColor)
-        .style("opacity", getOpacity)
-        .attr("r", function (d) {
-          return d.r;
-        });
+    d3.select(selectedCircle).classed("selected", true).style("opacity", 1).style("stroke", "#000000").transition().duration(750).style("stroke-width", 5 / zoomScale).attr("r", function (d) {
+      return d.r + 30 / zoomScale;
+    }).transition().delay(750).style("stroke-width", getBorderWidth).style("stroke", selfBorderColor).style("opacity", getOpacity).attr("r", function (d) {
+      return d.r;
+    });
   }
-
 
   function update(rootNode) {
     root = rootNode;
     nodes = pack.nodes(rootNode);
-    
+
     var editor = ace.edit("editor");
 
     updateCircles(nodes);
     updateLabels(nodes.filter(hasLabel));
     removePaths();
-
   }
 
-  function updateCircles (nodes) {
+  function updateCircles(nodes) {
     var circles;
 
-    circles = vis.selectAll("circle")
-        .data(nodes, function (d) {
-          return d.uniqueId;
-        });
+    circles = vis.selectAll("circle").data(nodes, function (d) {
+      return d.uniqueId;
+    });
 
-    circles
-      .style("stroke", getBorderColor)
-      .transition()
-        .duration(750)
-        .attr("cx", function(d) {return d.x})
-        .attr("cy", function(d) { return d.y; })
-        .attr("r", function(d) { return d.r; });
-        
-    circles.enter().append("svg:circle")
-      .attr("class", getClass)
-      .attr("id", function (d) {
-        return 'n' + d.uniqueId;
-      })
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; })
-      .attr("r", function(d) { return d.r; })
-      .style("stroke", getBorderColor)
-      .style("fill", getFillColor)
-      .style("stroke-width", getBorderWidth)
-      .style("opacity", getOpacity)
-      .on("click", onCircleClick)
-      .on('mouseover', function(d) {
-        if (d.name !== 'root' && d.type !== 'hidden' && (d.name !== '[Anonymous]' || (d.name === '[Anonymous]' && d.parent && (d.parent.type === 'file' || d.parent.type === 'inlineScript') && d.parent.children && d.parent.children.length === 1))) {
-          tip.attr('class', 'd3-tip animate').show(d);
-        }
-      })
-      .on('mouseout', function (d) {
-        tip.attr('class', 'd3-tip').show(d)
-        tip.hide();
-      });
+    circles.style("stroke", getBorderColor).transition().duration(750).attr("cx", function (d) {
+      return d.x;
+    }).attr("cy", function (d) {
+      return d.y;
+    }).attr("r", function (d) {
+      return d.r;
+    });
 
-    circles.exit()
-      .transition()
-        .duration(750)
-        .attr("r", function(d) { return 1e-6; })
-        .remove();
+    circles.enter().append("svg:circle").attr("class", getClass).attr("id", function (d) {
+      return 'n' + d.uniqueId;
+    }).attr("cx", function (d) {
+      return d.x;
+    }).attr("cy", function (d) {
+      return d.y;
+    }).attr("r", function (d) {
+      return d.r;
+    }).style("stroke", getBorderColor).style("fill", getFillColor).style("stroke-width", getBorderWidth).style("opacity", getOpacity).on("click", onCircleClick).on('mouseover', function (d) {
+      if (d.name !== 'root' && d.type !== 'hidden' && (d.name !== '[Anonymous]' || d.name === '[Anonymous]' && d.parent && (d.parent.type === 'file' || d.parent.type === 'inlineScript') && d.parent.children && d.parent.children.length === 1)) {
+        tip.attr('class', 'd3-tip animate').show(d);
+      }
+    }).on('mouseout', function (d) {
+      tip.attr('class', 'd3-tip').show(d);
+      tip.hide();
+    });
+
+    circles.exit().transition().duration(750).attr("r", function (d) {
+      return 1e-6;
+    }).remove();
 
     circles.order();
   }
 
-  function updateLabels (nodes) {
+  function updateLabels(nodes) {
     var labels;
 
     labels = vis.selectAll("text").data(nodes, function (d) {
-        return d.uniqueId;
-      });
-    
-    labels.attr("class", getClass)
-      .text(getLabelText)
-      .transition()
-        .duration(750)
-        .style("opacity", getLabelOpacity)
-        .attr("x", function(d) { return d.x; })
-      .attr("y", function(d) { return d.y; });
-      
-    labels
-      .enter().append("svg:text")
-      .attr("class", getClass)
-      .attr("x", function(d) { return d.x; })
-      .attr("y", function(d) { return d.y; })
-      .attr("dy", getLabelVerticalOffset)
-      .attr("text-anchor", "middle")
-      .style("fill", '#000')
-      .style("font-size", getFontSize)
-      .style("opacity", 1e-6)
-      .text(getLabelText)
-      .transition()
-        .duration(500)
-        .style("opacity", getLabelOpacity); 
+      return d.uniqueId;
+    });
 
-    labels.exit()
-      .transition()
-        .duration(500)
-        .style("opacity", 1e-6)
-        .remove();
+    labels.attr("class", getClass).text(getLabelText).transition().duration(750).style("opacity", getLabelOpacity).attr("x", function (d) {
+      return d.x;
+    }).attr("y", function (d) {
+      return d.y;
+    });
+
+    labels.enter().append("svg:text").attr("class", getClass).attr("x", function (d) {
+      return d.x;
+    }).attr("y", function (d) {
+      return d.y;
+    }).attr("dy", getLabelVerticalOffset).attr("text-anchor", "middle").style("fill", '#000').style("font-size", getFontSize).style("opacity", 1e-6).text(getLabelText).transition().duration(500).style("opacity", getLabelOpacity);
+
+    labels.exit().transition().duration(500).style("opacity", 1e-6).remove();
 
     labels.order();
   }
 
-  function onCircleClick (d, i) {
+  function onCircleClick(d, i) {
     if (d3.event.defaultPrevented) {
       return;
     }
     //clean up old selection:
-    d3.select(".selected").style("stroke", getBorderColor)
-      .classed("selected", false);
+    d3.select(".selected").style("stroke", getBorderColor).classed("selected", false);
 
     //highlight new selection (clicked circle)
-    d3.select(this).style("stroke", selfBorderColor)
-      .classed("selected", true);
-    
+    d3.select(this).style("stroke", selfBorderColor).classed("selected", true);
+
     //TODO: add back in
     //toggleDependencies(d, i);
 
@@ -292,11 +230,11 @@
     d3.event.stopPropagation();
   }
 
-  function hasLabel (d) {
+  function hasLabel(d) {
     return d.name !== '[Anonymous]' && d.name !== 'root';
   }
 
-  function getLabelOpacity (d) {
+  function getLabelOpacity(d) {
     if (d.r * zoom.scale() < 15) {
       return 1e-6;
     } else {
@@ -304,7 +242,7 @@
     }
   }
 
-  function getLabelText (d) {
+  function getLabelText(d) {
     var text = getToolTipText(d),
         letterWidth = getFontSize(d),
         zoomScale = zoom.scale();
@@ -312,7 +250,7 @@
     return text ? text.slice(0, parseInt(d.r * zoomScale / letterWidth * 2 + 2)) : '';
   }
 
-  function getLabelVerticalOffset (d, zoomScale) {
+  function getLabelVerticalOffset(d, zoomScale) {
     zoomScale = zoom.scale();
 
     if (d.type === 'file' || d.type === 'inlineScript') {
@@ -325,17 +263,16 @@
     }
   }
 
-  function zoomStarted () {
-  }
+  function zoomStarted() {}
 
-  function zoomed () {
+  function zoomed() {
     vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   }
 
   //var zoomScale;
   var oldZoomScale = 1;
 
-  function zoomEnded (e) {
+  function zoomEnded(e) {
     var zoomScale = zoom.scale();
 
     if (zoomScale === oldZoomScale) {
@@ -343,32 +280,22 @@
       return;
     }
 
-    var circles = vis.selectAll("circle")
-          .style("stroke-width", getBorderWidth);
+    var circles = vis.selectAll("circle").style("stroke-width", getBorderWidth);
 
-    var labels = vis.selectAll("text")
-          .attr("dy", getLabelVerticalOffset);
+    var labels = vis.selectAll("text").attr("dy", getLabelVerticalOffset);
 
     labels.filter(function (d) {
       return this.style.opacity === '1e-06';
-    }).style('font-size', getFontSize)
-      .text(getLabelText)
-      .transition()
-        .duration(500)
-        .style("opacity", getLabelOpacity);
+    }).style('font-size', getFontSize).text(getLabelText).transition().duration(500).style("opacity", getLabelOpacity);
 
     labels.filter(function (d) {
       return this.style.opacity !== '1e-06';
-    }).transition()
-        .duration(500)
-        .style("font-size", getFontSize)
-        .style("opacity", getLabelOpacity)
-      .transition().delay(500).text(getLabelText);
+    }).transition().duration(500).style("font-size", getFontSize).style("opacity", getLabelOpacity).transition().delay(500).text(getLabelText);
 
     oldZoomScale = zoomScale;
   }
 
-  function getFontSize (d) {
+  function getFontSize(d) {
     var zoomScale = zoom.scale(),
         fontSize;
 
@@ -383,17 +310,16 @@
     return fontSize / zoomScale;
   }
 
-  function removePaths () {
+  function removePaths() {
     var paths = vis.selectAll(".link").transition().remove();
   }
 
-  function toggleDependencies (d, i) {
+  function toggleDependencies(d, i) {
     showDependencyPaths(d);
     updateDependencyText(d, i);
   }
 
-
-  function showDependencyPaths (d) {
+  function showDependencyPaths(d) {
     var links = [],
         paths;
 
@@ -401,39 +327,33 @@
       return;
     }
 
-    links = d.dependencies.map(function(dep) {
+    links = d.dependencies.map(function (dep) {
       return {
         "source": d,
         "target": dep
       };
     });
 
-    paths = vis.selectAll(".link")
-        .data(links);
+    paths = vis.selectAll(".link").data(links);
 
-    paths.enter().append("svg:path")
-      .attr("class", "link")
-      .style("stroke", pathColor)
-      .style("fill", pathColor)
-      .style("stroke-width", function (d) {
-        return d3.min([d.source.r * 2, d.target.r * 2, 25]);
-      })
-      .style("stroke-linecap", "round")
-      .attr("opacity", 0.9)
-      .attr("d", lineData);
+    paths.enter().append("svg:path").attr("class", "link").style("stroke", pathColor).style("fill", pathColor).style("stroke-width", function (d) {
+      return d3.min([d.source.r * 2, d.target.r * 2, 25]);
+    }).style("stroke-linecap", "round").attr("opacity", 0.9).attr("d", lineData);
 
-    paths.each(function(d) { d.totalLength = this.getTotalLength(); d.highlight = true;})
-      .attr("stroke-dasharray", function(d) { return d.totalLength + " " + d.totalLength; })
-      .attr("stroke-dashoffset", function(d) { return d.totalLength; })
-      .transition()
-        .duration(1000)
-        .attr("stroke-dashoffset", function(d) { return -1 * d.totalLength; })
-        .remove();
+    paths.each(function (d) {
+      d.totalLength = this.getTotalLength();d.highlight = true;
+    }).attr("stroke-dasharray", function (d) {
+      return d.totalLength + " " + d.totalLength;
+    }).attr("stroke-dashoffset", function (d) {
+      return d.totalLength;
+    }).transition().duration(1000).attr("stroke-dashoffset", function (d) {
+      return -1 * d.totalLength;
+    }).remove();
 
     paths.exit().transition().remove();
   }
 
-  function updateDependencyText (d, i) {
+  function updateDependencyText(d, i) {
     var labels = vis.selectAll("text"),
         thisD = d,
         thisI = i;
@@ -443,13 +363,11 @@
     });
   }
 
-  function setEditorContents (d) {
-    var parent,
-        range,
-        code;
+  function setEditorContents(d) {
+    var parent, range, code;
 
     if (d.treeNode) {
-          range = d.treeNode.range;
+      range = d.treeNode.range;
 
       parent = getParentFile(d);
 
@@ -457,7 +375,7 @@
         editor.setValue(parent.sourceCode);
         currentEditorNode = parent;
       }
-      currentEditorLoc = d.treeNode && d.treeNode.loc ? d.treeNode.loc.start : {line:0, column: 0};
+      currentEditorLoc = d.treeNode && d.treeNode.loc ? d.treeNode.loc.start : { line: 0, column: 0 };
 
       if (showEditor) {
         positionEditor();
@@ -465,27 +383,25 @@
     }
   }
 
-  function positionEditor () {
+  function positionEditor() {
     if (currentEditorLoc) {
       editor.resize(true);
       editor.gotoLine(currentEditorLoc.line, currentEditorLoc.column, true);
     }
   }
 
-  function lineData(d){
-    var line = d3.svg.line()
-          .x( function(point) { return point.lx; })
-          .y( function(point) { return point.ly; }),
-        points = [
-          {lx: d.source.x, ly: d.source.y},
-          {lx: d.target.x, ly: d.target.y}
-        ];
-        
+  function lineData(d) {
+    var line = d3.svg.line().x(function (point) {
+      return point.lx;
+    }).y(function (point) {
+      return point.ly;
+    }),
+        points = [{ lx: d.source.x, ly: d.source.y }, { lx: d.target.x, ly: d.target.y }];
+
     return line(points);
   }
 
-
-  function makeBubbleChart (root)  {
+  function makeBubbleChart(root) {
     //myRootNode = root;
 
     // d3.select('.bubble-chart').on("click", function() {
@@ -507,26 +423,24 @@
 
   //this is where i hide the files and anonymous circles
   // TODO: should hide them by making them opac, with a background color fill color and a golden border color
-  function getBorderColor (d, i, thisD) {
+  function getBorderColor(d, i, thisD) {
     if (d.name === '[Anonymous]' && d.parent.type === 'file') {
       return anonymousBorderColor;
     } else if (d.name === '[Anonymous]') {
       return anonymousBorderColor;
-    } else if (d.name  === 'root') {
+    } else if (d.name === 'root') {
       return backgroundColor;
     } else if (d.type === 'file' || d.type === 'inlineScript') {
       return backgroundColor;
-    } else if (d.type ==='hidden') {
+    } else if (d.type === 'hidden') {
       return backgroundColor;
-    }else {
+    } else {
       return getFillColor(d);
     }
   }
 
-  function getFillColor (d, i, thisD) {
-    var parentFile,
-        sourceIndex,
-        fileFillColor;
+  function getFillColor(d, i, thisD) {
+    var parentFile, sourceIndex, fileFillColor;
 
     //ROOT
     if (!d.parent || d.parent === null) {
@@ -557,10 +471,9 @@
     return parentFile ? fileFillColor : backgroundColor;
   }
 
-
-  function getParentFile (d) {
+  function getParentFile(d) {
     var temp = d;
-    while(temp.parent) {
+    while (temp.parent) {
       //TODO: handle inlineScripts differently
       if (temp.type === 'file' || temp.type === 'inlineScript') {
         return temp;
@@ -588,23 +501,24 @@
     return 1.5 / zoomScale;
   }
 
-  function getToolTipText (d) {
+  function getToolTipText(d) {
     if (d.type === 'file') {
       return getBaseFileName(d.name);
-    } else if (d.name === '[Anonymous]') { //assuming parent is script and only has 1 child
+    } else if (d.name === '[Anonymous]') {
+      //assuming parent is script and only has 1 child
       return d.parent.name;
     } else {
       return d.name;
     }
   }
 
-  function getBaseFileName (name) {
+  function getBaseFileName(name) {
     var nameSplit = name.split('/');
 
-    return removeFileNameCash(nameSplit[(nameSplit.length - 1)]);
+    return removeFileNameCash(nameSplit[nameSplit.length - 1]);
   }
 
-  function removeFileNameCash (name) {
+  function removeFileNameCash(name) {
     var cashSplit = name.split('?');
 
     if (cashSplit.length > 1) {
@@ -614,7 +528,7 @@
     return cashSplit.join('');
   }
 
-  function getClass (d) {
+  function getClass(d) {
     var myClass;
     myClass = d.children && d.children.length ? "parent" : "child";
     // if (d.uniqueId) {
@@ -626,22 +540,8 @@
   function highlightActiveNode(uniqueId) {
     var nodeData = vis.select('#n' + uniqueId);
 
-    vis.append("svg:circle")
-      .attr("cx", nodeData.attr("cx"))
-      .attr("cy", nodeData.attr("cy"))
-      .attr("r", nodeData.attr("r"))
-      .attr("class", "highlighted")
-      .transition()
-        .duration(200)
-        .attr("r", parseInt(nodeData.attr("r")) + 10)
-      .transition()
-        .delay(200)
-        .duration(200)
-        .attr("r", 0)
-        .remove();
+    vis.append("svg:circle").attr("cx", nodeData.attr("cx")).attr("cy", nodeData.attr("cy")).attr("r", nodeData.attr("r")).attr("class", "highlighted").transition().duration(200).attr("r", parseInt(nodeData.attr("r")) + 10).transition().delay(200).duration(200).attr("r", 0).remove();
   }
-
- 
 
   function resizeVis() {
     container = document.getElementsByClassName("page-content")[0];
@@ -669,10 +569,8 @@
     resizeVis: resizeVis,
     editor: editor,
     positionEditor: positionEditor
-  }
+  };
 })(window);
-
-
 
 //JUST A TEST:::
 var background = chrome.extension.getBackgroundPage(),
@@ -687,7 +585,7 @@ pageTitle.innerHTML = background.sourcePageUrl;
 startTraceButton.addEventListener("click", listenToTrace);
 stopTraceButton.addEventListener("click", stopListeningToTrace);
 
-function listenToTrace () {
+function listenToTrace() {
   console.log("adding trace listener");
 
   chrome.runtime.onConnect.addListener(receiveFilterTrace);
@@ -697,7 +595,7 @@ function listenToTrace () {
   stopTraceButton.style.display = 'inline-block';
 }
 
-function stopListeningToTrace () {
+function stopListeningToTrace() {
   console.log("stopping trace listener");
 
   //chrome.runtime.onConnect.removeListener(receiveFilterTrace);
@@ -709,14 +607,14 @@ function stopListeningToTrace () {
   //stopTraceButton.style.display = 'none';
 }
 
-function receiveFilterTrace (port) {
+function receiveFilterTrace(port) {
   if (port.name === 'filteredTrace') {
-    port.onMessage.addListener(function(msg) {
+    port.onMessage.addListener(function (msg) {
       if (msg.type === 'trace2') {
         //console.log("TRACE2: ", msg);
         bubble.highlightActiveNode(msg.data.uniqueId);
       }
-    })
+    });
   }
 }
 
@@ -724,25 +622,24 @@ function goToSourcePage() {
   var tabId = background.sourcePageTab;
   console.log("goToSourcePage: ", tabId);
   if (tabId) {
-    chrome.tabs.update(tabId, {"selected": true});
+    chrome.tabs.update(tabId, { "selected": true });
   }
 }
 
-
 var showEditor = false;
 
-function showCode () {
+function showCode() {
   $('#side-bar').fadeIn().height($('.bubble-chart').height());
   showEditor = true;
   bubble.positionEditor();
 }
 
-function hideCode () {
+function hideCode() {
   $("#side-bar").fadeOut();
   showEditor = false;
 }
 
-function toggleCode () {
+function toggleCode() {
   if (showEditor) {
     hideCode();
   } else {
@@ -750,25 +647,23 @@ function toggleCode () {
   }
 }
 
-
-
 $(document).ready(function () {
   $('.show-code').click(toggleCode);
 
   $(".close-editor-button").click(hideCode);
   $(".webpage-title").click(goToSourcePage);
 
-  $( ".editor-wrapper" ).resizable({
-      handles: 's, w, sw',
-      // maxHeight: 1000,
-      // maxWidth: 1000,
-      minHeight: 100,
-      minWidth: 200,
-      stop: function (e) {
-        window.bubble.editor.resize();
-        console.log("called editor.resize()");
-      }
-    });
+  $(".editor-wrapper").resizable({
+    handles: 's, w, sw',
+    // maxHeight: 1000,
+    // maxWidth: 1000,
+    minHeight: 100,
+    minWidth: 200,
+    stop: function stop(e) {
+      window.bubble.editor.resize();
+      console.log("called editor.resize()");
+    }
+  });
 });
 
 var resizeDelayTimer;
@@ -778,5 +673,5 @@ $(window).resize(function () {
   resizeDelayTimer = setTimeout(bubble.resizeVis, 200);
 });
 
-
-
+},{}]},{},[1])
+//# sourceMappingURL=bubble_bundle.js.map

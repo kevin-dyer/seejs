@@ -19759,4 +19759,4 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":33}]},{},[1])
-//# sourceMappingURL=bundle.js.map
+//# sourceMappingURL=popup_bundle.js.map

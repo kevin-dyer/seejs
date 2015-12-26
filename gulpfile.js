@@ -5,42 +5,56 @@ var babelify    = require('babelify');
 var watchify    = require('watchify');
 var exorcist    = require('exorcist');
 var browserify  = require('browserify');
-var exec = require('child_process').exec;
 
 // Input file.
 watchify.args.debug = true;
 var bundler = watchify(browserify('./app/js/popup_init.js', watchify.args));
+var bundler2 = watchify(browserify('./app/js/bubble.js', watchify.args));
 
 // Babel transform
 bundler.transform(babelify.configure({
     sourceMapRelative: 'app/js'
 }));
+bundler2.transform(babelify.configure({
+    sourceMapRelative: 'app/js'
+}));
 
 // On updates recompile
 bundler.on('update', bundle);
+bundler2.on('update', bundle2);
 
-function bundle() {
-
-    gutil.log('Compiling JS...');
+function bundle () {
+    gutil.log('Compiling Popup JS...');
 
     var output = bundler.bundle()
         .on('error', function (err) {
             gutil.log(err.message);
             this.emit("end");
         })
-        .pipe(exorcist('app/js/dist/bundle.js.map'))
-        .pipe(source('bundle.js'))
+        .pipe(exorcist('app/js/dist/popup_bundle.js.map'))
+        .pipe(source('popup_bundle.js'))
         .pipe(gulp.dest('./app/js/dist'));
-        //.pipe(updateExtension());
 
-    //exec('/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --pack-extension=/Users/employee/telmate_dev/seejs --pack-extension-key=/Users/employee/telmate_dev/seejs/seejs.pem');
-    gutil.log('Finished compiling');
+    gutil.log('Finished compiling popup');
 
     return output;
 }
 
-function updateExtension () {
-    //gutil.log('updating Extension');
+function bundle2 () {
+    gutil.log('Compiling Bubble JS...');
+
+    var output = bundler2.bundle()
+        .on('error', function (err) {
+            gutil.log(err.message);
+            this.emit("end");
+        })
+        .pipe(exorcist('app/js/dist/bubble_bundle.js.map'))
+        .pipe(source('bubble_bundle.js'))
+        .pipe(gulp.dest('./app/js/dist'));
+
+    gutil.log('Finished compiling bubble');
+
+    return output;
 }
 
 /**
@@ -50,9 +64,12 @@ gulp.task('bundle', function () {
     return bundle();
 });
 
+gulp.task('bundle2', function () {
+    return bundle2();
+})
+
 /**
  * First bundle, then serve from the ./app directory
  */
-gulp.task('default', ['bundle'], function () {
-    //exec('/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --pack-extension=/Users/employee/telmate_dev/seejs --pack-extension-key=/Users/employee/telmate_dev/seejs/seejs.pem');
+gulp.task('default', ['bundle', 'bundle2'], function () {
 });
