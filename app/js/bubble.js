@@ -486,21 +486,6 @@
 
 
   function makeBubbleChart (root)  {
-    //myRootNode = root;
-
-    // d3.select('.bubble-chart').on("click", function() {
-    //   var editor = ace.edit("editor")
-
-    //   while(root.parent){
-    //     root = root.parent;
-    //   }
-    //   update(root);
-
-    //   editor.setValue('var instructions = "Click on a function to see its source code.";');
-    // });
-
-    //node = root; //for zoom
-
     console.log("root: ", root);
     update(root);
   }
