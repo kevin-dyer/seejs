@@ -99,7 +99,7 @@ function buildCodeTree () {
   }
 
   console.log("setting scopedList");
-  codeTree = tracer.setScopedList(codeTree);
+  //codeTree = tracer.setScopedList(codeTree);
 
   //setDependencies(codeTree);
 
@@ -197,6 +197,120 @@ function updateMultipleScripts (msg) {
 //     modifiedSource.push(tracer.addFunctionTrace(code, fileNode))
 //   }
 // }
+
+
+//TODO: move to another module:
+function getReactComponents () {
+  var tree,
+      i,
+      sourceLength = sourceCode.length, //TODO: adjust to only use checked scripts
+      fileNode,
+      tracer = window.esmorph.Tracer,
+      traverse = tracer.traverse,
+      Syntax = tracer.Syntax,
+      code,
+      parsedComponent,
+      componentNode,
+      components = [];
+
+  for (i = 0; i < sourceLength; i++) {
+
+    if (!sourceCode[i].checked){
+      //console.log("souceCode not checked!")
+      continue;
+    }
+
+    code = sourceCode[i].code;
+
+    console.log(i + ". Adding " + sourceCode[i].name);
+    tree = esprima.parse(code, { range: true, loc: true});
+    //console.log("esprima tree: ", tree);
+    
+    traverse(tree, function (element, path) {
+      if (element && element.callee && element.callee.property && element.callee.property.name === 'createClass' && element.arguments && element.arguments[0] && element.arguments[0].type === Syntax.ObjectExpression) {
+        parsedComponent = element.arguments[0];
+        componentNode = createReactComponentNode(parsedComponent, sourceCode[i]);
+        components.push(componentNode);
+      }
+    });
+    //console.log("completed adding " + sourceCode[i].name);
+  }
+
+  console.log("setting component dependencies...");
+  components = setComponentDependencies(components);
+
+  console.log("React components: ", components);
+  return components;
+}
+
+function createReactComponentNode (parsedComponent, sourceScript) {
+  return {
+    name: getComponentName(parsedComponent),
+    script: sourceScript, //might pair this down
+    range: parsedComponent.range, //used for size/value
+    uniqueId: sourceScript.uniqueKey + '-' + parsedComponent.range[0] + '-' + parsedComponent.range[1],
+    parsedComponent: parsedComponent,
+    dependents: [] //fill when have references to all the components
+  };
+}
+
+function getComponentName (parsedComponent) {
+  var i,
+      properties = parsedComponent.properties,
+      propsLength = properties.length,
+      prop;
+
+  for (i = 0; i < propsLength; i++) {
+    prop = properties[i];
+    if (prop && prop.key && prop.key.name === 'displayName') {
+      return prop.value.value;
+    }
+  }
+  return null;
+}
+
+function setComponentDependencies (components) {
+  var tracer = window.esmorph.Tracer,
+      traverse = tracer.traverse,
+      Syntax = tracer.Syntax;
+
+
+  return components.map(function (component) {
+    var dependent;
+    traverse(component.parsedComponent, function (element, path) {
+      if (element.type === Syntax.CallExpression && element.callee && element.callee.property && element.callee.property.name === 'createElement' && element.arguments && element.arguments[0] && element.arguments[0].name) {
+        //element.arguments[0].value  === name of component - match to component.name of others
+        console.log("finding component by name: ", element.arguments[0].name);
+        dependent = findComponentByName(element.arguments[0].name, components);
+        if (dependent && componentIsUnique(dependent, component.dependents)) {
+          component.dependents.push(dependent);
+        }
+      }
+    });
+    return component;
+  });
+}
+
+function findComponentByName (componentName, components) {
+  var i,
+      componentsLength = components.length,
+      component;
+
+  for (i = 0; i < componentsLength; i++) {
+    component = components[i];
+    if (component.name === componentName) {
+      return component;
+    }
+  }
+  return null;
+}
+
+function componentIsUnique(component, components) {
+  return components.map(function (comp) {return comp.name}).indexOf(component.name) === -1;
+}
+
+
+
 
 
 function getScriptTags() {

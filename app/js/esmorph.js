@@ -465,7 +465,9 @@
     }
 
     exports.Tracer = {
+        Syntax: Syntax,
         init: init,
+        traverse: traverse,
         functionTree: initFunctionTree,
         getFunctionTree: getFunctionTree,
         setScopedList: setScopedList,
