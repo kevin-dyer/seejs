@@ -7,7 +7,9 @@ var sourceCode,
     sourcePageTab,
     sourcePageUrl,
     visUrl,
-    visTab;// = chrome.extension.getURL("bubble.html");
+    visTab,// = chrome.extension.getURL("bubble.html");
+    reactRoot,
+    reactComponents;
 
 var testVar = "hello yall!";
 
@@ -109,6 +111,7 @@ function buildCodeTree () {
   console.log("Setting unique id's: ");
   codeTree = tracer.setUniqueIds(codeTree);
 
+
   console.log("Converting to children");
   codeTree = tracer.convertToChildren(codeTree);
 
@@ -198,8 +201,89 @@ function updateMultipleScripts (msg) {
 //   }
 // }
 
+function getReactComponentMatrix () {
+  if (!reactComponents) {
+    reactComponents = getReactComponents();
+  }
+
+  var i,
+      j,
+      componentsLength = reactComponents.length,
+      comp1,
+      comp2,
+      dependentMatrix = [],
+      row = [];
+
+  console.log("reactComponents: ", reactComponents);
+  for (i = 0; i < componentsLength; i++) {
+    comp1 = reactComponents[i];
+    row = [];
+    for (j = 0; j < componentsLength; j++) {
+      comp2 = reactComponents[j];
+      console.log("")
+      //dependentMatrix[i][j] = !componentIsUnique(comp2, comp1.dependents) ? 1 : 0;
+      row.push(!componentIsUnique(comp2, comp1.dependents) ? 1 : 0);
+    }
+    dependentMatrix[i] = row;
+  }
+
+  console.log("dependentMatrix: ", dependentMatrix);
+  return dependentMatrix;
+}
+
+function getReactComponentChordArray () {
+  if (!reactComponents) {
+    reactComponents = getReactComponents();
+  }
+
+  var i,
+      j,
+      componentsLength = reactComponents.length,
+      comp,
+      dep,
+      chordArray = [];
+      //row = [];
+
+  console.log("reactComponents: ", reactComponents);
+  for (i = 0; i < componentsLength; i++) {
+    comp = reactComponents[i];
+    //row = [];
+    for (j = 0; j < comp.dependents.length; j++) {
+      dep = comp.dependents[j];
+      //dependentMatrix[i][j] = !componentIsUnique(comp2, comp1.dependents) ? 1 : 0;
+      //row.push(!componentIsUnique(comp2, comp1.dependents) ? 1 : 0);
+      chordArray.push({
+        component: comp.name,
+        dependentcy: dep.name,
+        count: 1
+      });
+    }
+  }
+
+  console.log("chordArray: ", chordArray);
+  return chordArray;
+}
+
 
 //TODO: move to another module:
+function getReactComponentTree () {
+  var components = getReactComponents();
+
+  reactRoot = {
+    children: getReactFileNodes(components, reactRoot),
+    name: 'root',
+    parent: null,
+    size: 1,
+    type: 'root',
+    uniqueId: UTILS.getId()
+  };
+
+  console.log("react component tree: ", reactRoot);
+  //sendVistMessage({type: 'reactComponentTree', reactRoot});
+
+  return reactRoot;
+}
+
 function getReactComponents () {
   var tree,
       i,
@@ -211,7 +295,7 @@ function getReactComponents () {
       code,
       parsedComponent,
       componentNode,
-      components = [];
+      reactComponents = [];
 
   for (i = 0; i < sourceLength; i++) {
 
@@ -230,28 +314,38 @@ function getReactComponents () {
       if (element && element.callee && element.callee.property && element.callee.property.name === 'createClass' && element.arguments && element.arguments[0] && element.arguments[0].type === Syntax.ObjectExpression) {
         parsedComponent = element.arguments[0];
         componentNode = createReactComponentNode(parsedComponent, sourceCode[i]);
-        components.push(componentNode);
+        reactComponents.push(componentNode);
       }
     });
     //console.log("completed adding " + sourceCode[i].name);
   }
 
-  console.log("setting component dependencies...");
-  components = setComponentDependencies(components);
+  //TODO: send in different call
+  //console.log("setting component dependencies... reactComponents: ", reactComponents);
+  reactComponents = setComponentDependencies(reactComponents);
 
-  console.log("React components: ", components);
-  return components;
+  console.log("React components: ", reactComponents);
+
+  return reactComponents;
 }
 
 function createReactComponentNode (parsedComponent, sourceScript) {
-  return {
+  var componentNode;
+
+  componentNode = {
     name: getComponentName(parsedComponent),
     script: sourceScript, //might pair this down
     range: parsedComponent.range, //used for size/value
     uniqueId: sourceScript.uniqueKey + '-' + parsedComponent.range[0] + '-' + parsedComponent.range[1],
     parsedComponent: parsedComponent,
-    dependents: [] //fill when have references to all the components
+    dependents: [], //fill when have references to all the components
+    type: 'reactComponent'
+    //children: addComponentProps(componentNode)
   };
+  componentNode = addComponentProps(componentNode);
+  //console.log("componentNode.children: ", componentNode.children);
+
+  return componentNode;
 }
 
 function getComponentName (parsedComponent) {
@@ -277,6 +371,8 @@ function setComponentDependencies (components) {
 
   return components.map(function (component) {
     var dependent;
+
+    console.log("component: ", component);
     traverse(component.parsedComponent, function (element, path) {
       if (element.type === Syntax.CallExpression && element.callee && element.callee.property && element.callee.property.name === 'createElement' && element.arguments && element.arguments[0] && element.arguments[0].name) {
         //element.arguments[0].value  === name of component - match to component.name of others
@@ -309,9 +405,174 @@ function componentIsUnique(component, components) {
   return components.map(function (comp) {return comp.name}).indexOf(component.name) === -1;
 }
 
+function scriptIsUnique(script, scripts) {
+  return scripts.map(function (scrp) { return scrp.uniqueKey}).indexOf(script.uniqueKey) === -1;
+}
+
+function getReactFileNodes (components, reactRoot) {
+  var files = [],
+      i,
+      componentsLength = components.length,
+      component,
+      script;
+
+  for(i = 0; i < componentsLength; i++) {
+    component = components[i];
+    //console.log("component (in getReactFileNodes: ", component);
+    script = component.script;
+    if (script.uniqueKey && scriptIsUnique(script, files)) {
+      files.push(createReactFileNode(script, reactRoot, components));
+    }
+  }
+
+  //files = addComponentsToFiles(files, components);
 
 
+  return files;
+}
 
+function createReactFileNode(script, reactRoot, components) {
+  var reactFileNode;
+
+  reactFileNode = {
+    name: script.name,
+    parent: reactRoot,
+    sourceIndex: script.uniqueKey,
+    type: script.type, //change all of these to just script
+    code: script.code,
+    uniqueKey: script.uniqueKey,
+    uniqueId: 's' + script.uniqueKey, // ???
+    size: script.code.length,
+    sourceCode: script.code
+  };
+  reactFileNode.children = addComponentsToFile(reactFileNode, components);
+
+  return reactFileNode;
+}
+
+// function addComponentsToFiles (files, components) {
+//   var i,
+//       componentsLength = components.length,
+//       component;
+
+//   return files.map(function (file) {
+//     file.children = [];
+//     for (i = 0; i < componentsLength; i++) {
+//       component = components[i];
+//       if (component.script.uniqueKey === file.uniqueKey) {
+//         component.parent = file;
+//         file.children.push(component);
+//       }
+//     }
+//     return file;
+//   });
+// }
+
+function addComponentsToFile (file, components) {
+  var i,
+      componentsLength = components.length,
+      component,
+      children = [];
+
+  console.log("adding components to file!");
+  for (i = 0; i < componentsLength; i++) {
+    component = components[i];
+    console.log("component.script", component.script, ", file.uniqueKey: ", file);
+    if (component.script.uniqueKey === file.uniqueKey) {
+      component.parent = file;
+      children.push(component);
+    }
+  }
+  return children;
+}
+
+function addComponentProps (componentNode) {
+  var i,
+      properties = componentNode.parsedComponent.properties,
+      propsLength = properties.length,
+      prop,
+      propNode,
+      tracer = window.esmorph.Tracer,
+      Syntax = tracer.Syntax;
+
+  componentNode.children = [];
+
+  //for reference
+  // componentNode = {
+  //   name: getComponentName(parsedComponent),
+  //   script: sourceScript, //might pair this down
+  //   range: parsedComponent.range, //used for size/value
+  //   uniqueId: sourceScript.uniqueKey + '-' + parsedComponent.range[0] + '-' + parsedComponent.range[1],
+  //   parsedComponent: parsedComponent,
+  //   dependents: [], //fill when have references to all the components
+  //   children: addComponentProps(componentNode)
+  // };
+
+  for (i = 0; i < propsLength; i++) {
+
+    prop = properties[i];
+
+    console.log("add component prop: ", prop);
+
+    propNode = {
+      name: prop.key.name,
+      parent: componentNode,
+      loc: prop.loc,
+      range: prop.range,
+      size: prop.range[1] - prop.range[0],
+      treeNode: prop,
+      uniqueId: componentNode.script.uniqueKey + '-' + prop.range[0] + '-' + prop.range[1],
+      type: 'property',
+      myChildren: []
+    };
+
+    // var functionTree = {
+    //             name: sourceCode.name || 'noName',
+    //             parent: null,
+    //             myChildren: [],
+    //             treeNode: node,
+    //             type: sourceCode.type,
+    //             sourceCode: sourceCode.code
+    //         };
+    //     createFunctionTree(node, code, functionTree);
+    //    return functionTree;
+    if (propNode.value && propNode.value.type === Syntax.FunctionExpression) {
+      //create function tree for this property
+      //fileNode = tracer.getFunctionTree(prop, code, sourceCode[i]);
+      // fileNode.parent = codeTree;
+      // fileNode.sourceIndex = i; // may not be necessary
+      // codeTree.myChildren.push(fileNode);
+
+      // var functionTree = {
+      //   name: propNode.name,
+      //   parent: propNode,
+      //   myChildren: [],
+      //   treeNode: prop,
+
+      // }
+
+      //try making with just these two arguments...
+      propNode.myChildren = createPropFunctionTree(prop, componentNode.script);
+      console.log("propNode.myChildren: ", propNode.myChildren); // check if its an array
+
+    }
+
+    componentNode.children.push(propNode);
+  }
+  return componentNode;
+}
+
+//returns list of functions (no root node)
+function createPropFunctionTree (propTree, sourceScript) {
+  //TODO: make function tree so that the propNode is the rootNode, so the function Tree starts at its children...
+  var functionTree = {
+    name: propTree.key.name,
+    myChildren: []
+  };
+
+  window.esmorph.Tracer.createFunctionTree(propTree, sourceScript.code, functionTree);
+  return functionTree;
+}
 
 function getScriptTags() {
   chrome.tabs.query({active: true, currentWindow: true}, function (tab) {
@@ -400,6 +661,12 @@ function sendScriptListToPopup () {
     console.log("response from sendScriptListToPopup: ", response);
   });
 }
+
+function sendVistMessage (message) {
+  chrome.runtime.sendMessage(message, function (response) {
+    console.log("response from sendVisMessage: ", response);
+  });
+}
   
 
 
@@ -429,6 +696,8 @@ chrome.extension.onConnect.addListener(function(port) {
       updateSourceCode(msg);
     } else if (msg.type === 'updateMultipleScripts') {
       updateMultipleScripts(msg);
+    } else if (msg.type === 'getReactComponentTree') {
+      getReactComponentTree();
     }
   });
 });

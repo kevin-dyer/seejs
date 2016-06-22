@@ -168,7 +168,7 @@
 
             //convert myChildren to children
             parent.children = parent.myChildren;
-            //parent.size = parent.dependencies.length * 2 + 1;
+            //TODO: size should be calculated elsewhere
             parent.size = parent.sourceCode ? (parent.sourceCode.length * 2 + 1) : 1;
             delete parent.myChildren;
 
@@ -282,7 +282,8 @@
                 myChildren: [],
                 treeNode: node,
                 type: sourceCode.type,
-                sourceCode: sourceCode.code
+                sourceCode: sourceCode.code,
+                uniqueKey: sourceCode.uniqueKey
             };
         createFunctionTree(node, code, functionTree);
 
@@ -404,9 +405,23 @@
 
     function setUniqueIds (functionTree) {
         traverseFunctionTree(functionTree, function(node, path) {
-            node.uniqueId = node.uniqueId || UTILS.getId(node.treeNode);
+            //node.uniqueId = node.uniqueId || UTILS.getId(node.treeNode);
+            console.log("node in setUniqueIds: ", node);
+            if (node.treeNode && node.treeNode.range) {
+                node.uniqueId = getParentFile(node).uniqueKey + '-' + node.treeNode.range[0] + '-' + node.treeNode.range[1];
+            } else {
+                return (Math.floor(Math.random()*90000) + 10000).toString();
+            }
+            
         });
         return functionTree;
+    }
+
+    function getParentFile (node) {
+        while (node.parent && node.parent.type !== 'file' && node.parent.type !== 'inlineScript' && node.parent.type !== 'root') {
+            node = node.parent;
+        }
+        return node;
     }
 
     function functionExists (name, functionList) {
@@ -470,6 +485,7 @@
         traverse: traverse,
         functionTree: initFunctionTree,
         getFunctionTree: getFunctionTree,
+        createFunctionTree: createFunctionTree,
         setScopedList: setScopedList,
         setFunctionTreeDependencies: setFunctionTreeDependencies,
         addHiddenChildren: addHiddenChildren,

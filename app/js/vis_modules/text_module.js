@@ -1,6 +1,6 @@
 var SelectionUtils = require('./selections_module.js');
 
-var zoomScale = window.zoomScale;
+var zoomScale = window.zoomScale; //wont work b/c js assigns strings and numbers as values, not as references
 
 function getToolTipText (d) {
   if (d.type === 'file') {
@@ -33,15 +33,16 @@ function hasLabel (d) {
 }
 
 function isHidden () {
+  //console.log("isHidden: ", this.style.opacity === '1e-06');
   return this.style.opacity === '1e-06';
 }
 
 function isVisible() {
-  return !isHidden();
+  return !isHidden.call(this);
 }
 
 function getLabelOpacity (d) {
-  if (d.r * zoomScale < 15) {
+  if (d.r * window.zoomScale < 15) {
     return 1e-6;
   } else {
     return 1;
@@ -52,10 +53,10 @@ function getLabelText (d) {
   var text = getToolTipText(d),
       letterWidth = getFontSize(d);
 
-  return text ? text.slice(0, parseInt(d.r * zoomScale / letterWidth * 2 + 2)) : '';
+  return text ? text.slice(0, parseInt(d.r * window.zoomScale / letterWidth * 2 + 2)) : '';
 }
 
-function getFontSize (d) {
+function getFontSize (d, i) {
   var fontSize;
 
   if (d.type === 'file' || d.type === 'inlineScript') {
@@ -66,10 +67,12 @@ function getFontSize (d) {
     fontSize = 11;
   }
 
-  return fontSize / zoomScale;
+  return fontSize / window.zoomScale;
 }
 
 function getLabelVerticalOffset (d) {
+  var zoomScale = window.zoomScale;
+
   if (d.type === 'file' || d.type === 'inlineScript') {
     return -0.75 * d.r;
   } else if (d.r * zoomScale > 20 && d.children && d.children.length < 3 && d.children.length) {
@@ -81,21 +84,20 @@ function getLabelVerticalOffset (d) {
 }
 
 function updateLabelsAfterZoom () {
-  var labels = SelectionUtils.getLabels();
+  var labels = SelectionUtils.getLabels(),
+      zoomScale = window.zoomScale;
+
+  
 
   labels.attr("dy", getLabelVerticalOffset);
-  labels.filter(function (d) {
-    isHidden.bind(this);
-  })
+  labels.filter(isHidden)
     .style('font-size', getFontSize)
     .text(getLabelText)
     .transition()
       .duration(500)
       .style("opacity", getLabelOpacity);
 
-  labels.filter(function (d) {
-    isVisible.bind(this);
-  })
+  labels.filter(isVisible)
     .transition()
       .duration(500)
       .style("font-size", getFontSize)

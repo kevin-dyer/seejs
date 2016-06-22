@@ -24,6 +24,7 @@ TipUtils.initToolTip();
 BubbleJS.initVis();
 
 var root = ExtensionUtils.getCodeTree();
+console.log("root: ", root);
 BubbleJS.update(root);
 
 $(window).resize(function () {
@@ -35,6 +36,7 @@ $(document).ready(function () {
     $(".close-editor-button").click(EditorUtils.hideCode);
     $(".webpage-title").click(ExtensionUtils.goToSourcePage);
     $('#show-react-bubbles').click(ReactUtils.bubbleVis);
+    $('#show-react-chord').click(ReactUtils.chordVis);
 });
 
 //Try adding new visualization - react components
@@ -798,7 +800,7 @@ $(document).ready(function () {
 //   resizeDelayTimer = setTimeout(bubble.resizeVis, 200);
 // });
 
-},{"./vis_modules/bubble_js_module.js":2,"./vis_modules/dimensions_module.js":5,"./vis_modules/editor_module.js":6,"./vis_modules/extension_module.js":7,"./vis_modules/react_module.js":8,"./vis_modules/tooltip_module.js":11,"./vis_modules/zoom_module.js":13}],2:[function(require,module,exports){
+},{"./vis_modules/bubble_js_module.js":2,"./vis_modules/dimensions_module.js":5,"./vis_modules/editor_module.js":6,"./vis_modules/extension_module.js":7,"./vis_modules/react_module.js":9,"./vis_modules/tooltip_module.js":12,"./vis_modules/zoom_module.js":14}],2:[function(require,module,exports){
 'use strict';
 
 var TreeUtils = require('./tree_module.js'),
@@ -940,7 +942,7 @@ function resizeVis() {
 
 module.exports = BubbleJS;
 
-},{"./circle_module.js":3,"./color_module.js":4,"./dimensions_module.js":5,"./editor_module.js":6,"./selections_module.js":9,"./text_module.js":10,"./tooltip_module.js":11,"./tree_module.js":12,"./zoom_module.js":13}],3:[function(require,module,exports){
+},{"./circle_module.js":3,"./color_module.js":4,"./dimensions_module.js":5,"./editor_module.js":6,"./selections_module.js":10,"./text_module.js":11,"./tooltip_module.js":12,"./tree_module.js":13,"./zoom_module.js":14}],3:[function(require,module,exports){
 'use strict';
 
 var EditorUtils = require('./editor_module.js'),
@@ -1041,7 +1043,7 @@ var CircleUtils = {
 
 module.exports = CircleUtils;
 
-},{"./color_module.js":4,"./editor_module.js":6,"./selections_module.js":9,"./tooltip_module.js":11}],4:[function(require,module,exports){
+},{"./color_module.js":4,"./editor_module.js":6,"./selections_module.js":10,"./tooltip_module.js":12}],4:[function(require,module,exports){
 "use strict";
 
 var TreeUtils = require('./tree_module.js');
@@ -1092,6 +1094,8 @@ var ColorUtils = {
       return backgroundColor;
     } else if (d.type === 'hidden') {
       return backgroundColor;
+    } else if (d.type === 'property' && d.name === 'render') {
+      return '#000000';
     } else {
       return getFillColor(d);
     }
@@ -1102,12 +1106,12 @@ var ColorUtils = {
 
 module.exports = ColorUtils;
 
-},{"./tree_module.js":12}],5:[function(require,module,exports){
-'use strict';
+},{"./tree_module.js":13}],5:[function(require,module,exports){
+//var BubbleJS = require('./bubble_js_module.js'),
+//ZoomUtils = require('./zoom_module.js'),
+//SelectionUtils = require('./selections_module.js');
 
-var BubbleJS = require('./bubble_js_module.js'),
-    ZoomUtils = require('./zoom_module.js'),
-    SelectionUtils = require('./selections_module.js');
+"use strict";
 
 var container, w, h, r, resizeDelayTimer;
 
@@ -1192,7 +1196,7 @@ var DimensionsUtils = {
 
 module.exports = DimensionsUtils;
 
-},{"./bubble_js_module.js":2,"./selections_module.js":9,"./zoom_module.js":13}],6:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var CircleUtils = require('./circle_module.js'),
@@ -1369,69 +1373,382 @@ function initResizableEditorWrapper() {
 
 module.exports = EditorUtils;
 
-},{"./circle_module.js":3,"./tree_module.js":12}],7:[function(require,module,exports){
+},{"./circle_module.js":3,"./tree_module.js":13}],7:[function(require,module,exports){
 "use strict";
 
-var backgroundPage;
+var backgroundPage,
+    port = chrome.extension.connect({ name: "Bubble Vis" });
 
 console.log("ExtensionUtils loaded...");
 
+function getBackgroundPage() {
+  if (!backgroundPage) {
+    backgroundPage = chrome.extension.getBackgroundPage();
+  }
+  return backgroundPage;
+}
+
+function setPageTitle() {
+  getPageTitleElement().innerHTML = getBackgroundPage().sourcePageUrl;
+}
+
+function getPageTitleElement() {
+  return document.getElementsByClassName('webpage-title')[0];
+}
+
 var ExtensionUtils = {
-  getBackgroundPage: function getBackgroundPage() {
-    if (!backgroundPage) {
-      backgroundPage = chrome.extension.getBackgroundPage();
-    }
-    return backgroundPage;
-  },
+  getBackgroundPage: getBackgroundPage,
 
-  getPageTitleElement: function getPageTitleElement() {
-    return document.getElementsByClassName('webpage-title')[0];
-  },
+  getPageTitleElement: getPageTitleElement,
 
-  setPageTitle: function setPageTitle() {
-    this.getPageTitleElement().innerHTML = this.getBackgroundPage().sourcePageUrl;
-  },
+  setPageTitle: setPageTitle,
 
   getCodeTree: function getCodeTree() {
-    return this.getBackgroundPage().codeTree;
+    return getBackgroundPage().codeTree;
   },
 
   goToSourcePage: function goToSourcePage() {
-    var tabId = this.getBackgroundPage().sourcePageTab;
+    var tabId = getBackgroundPage().sourcePageTab;
     console.log("goToSourcePage: ", tabId);
-    if (chrome.tabs.get(tabId)) {
-      chrome.tabs.update(tabId, { "selected": true });
-    } else {
-      console.log("Source Page Tab does not exist anymore.");
-    }
+    chrome.tabs.get(tabId, function (tab) {
+      if (tab) {
+        chrome.tabs.update(tabId, { "selected": true });
+      } else {
+        console.log("Source Page Tab does not exist anymore.");
+      }
+    });
   },
 
-  getReactComponentRoot: function getReactComponentRoot() {
-    return this.getBackgroundPage().getReactComponents();
+  getReactComponentTree: function getReactComponentTree() {
+    return getBackgroundPage().getReactComponentTree();
+  },
+
+  getReactComponentMatrix: function getReactComponentMatrix() {
+    return getBackgroundPage().getReactComponentMatrix();
+  },
+
+  getReactComponentChordArray: function getReactComponentChordArray() {
+    return getBackgroundPage().getReactComponentChordArray();
+  },
+
+  messageBackground: function messageBackground(msg, callback) {
+    var self = this;
+    //test
+    console.log("message to background: ", msg);
+    port.postMessage(msg);
+    //background response
+    port.onMessage.addListener(function (msg) {
+      console.log("message recieved" + msg);
+      if (typeof callback === 'function') {
+        callback(msg);
+      }
+
+      if (msg.type === 'reactComponentTree') {
+        console.log("received reactComponentTree request");
+        self.getReactComponentTree();
+      }
+    });
   }
 };
 
 module.exports = ExtensionUtils;
 
 },{}],8:[function(require,module,exports){
+//*******************************************************************
+//  CHORD MAPPER
+//*******************************************************************
+
+"use strict";
+
+var MapperUtil = {
+  chordMpr: function chordMpr(data) {
+    var mpr = {},
+        mmap = {},
+        n = 0,
+        matrix = [],
+        filter,
+        accessor;
+
+    mpr.setFilter = function (fun) {
+      filter = fun;
+      return this;
+    }, mpr.setAccessor = function (fun) {
+      accessor = fun;
+      return this;
+    }, mpr.getMatrix = function () {
+      matrix = [];
+      _.each(mmap, function (a) {
+        if (!matrix[a.id]) matrix[a.id] = [];
+        _.each(mmap, function (b) {
+          var recs = _.filter(data, function (row) {
+            return filter(row, a, b);
+          });
+          matrix[a.id][b.id] = accessor(recs, a, b);
+        });
+      });
+      return matrix;
+    }, mpr.getMap = function () {
+      return mmap;
+    }, mpr.printMatrix = function () {
+      _.each(matrix, function (elem) {
+        console.log(elem);
+      });
+    }, mpr.addToMap = function (value, info) {
+      if (!mmap[value]) {
+        mmap[value] = { name: value, id: n++, data: info };
+      }
+    }, mpr.addValuesToMap = function (varName, info) {
+      var values = _.uniq(_.pluck(data, varName));
+      _.map(values, function (v) {
+        if (!mmap[v]) {
+          mmap[v] = { name: v, id: n++, data: info };
+        }
+      });
+      return this;
+    };
+    return mpr;
+  },
+
+  chordRdr: function chordRdr(matrix, mmap) {
+    return function (d) {
+      var i,
+          j,
+          s,
+          t,
+          g,
+          m = {};
+      if (d.source) {
+        i = d.source.index;j = d.target.index;
+        s = _.where(mmap, { id: i });
+        t = _.where(mmap, { id: j });
+        m.sname = s[0].name;
+        m.sdata = d.source.value;
+        m.svalue = +d.source.value;
+        m.stotal = _.reduce(matrix[i], function (k, n) {
+          return k + n;
+        }, 0);
+        m.tname = t[0].name;
+        m.tdata = d.target.value;
+        m.tvalue = +d.target.value;
+        m.ttotal = _.reduce(matrix[j], function (k, n) {
+          return k + n;
+        }, 0);
+      } else {
+        g = _.where(mmap, { id: d.index });
+        m.gname = g[0].name;
+        m.gdata = g[0].data;
+        m.gvalue = d.value;
+      }
+      m.mtotal = _.reduce(matrix, function (m1, n1) {
+        return m1 + _.reduce(n1, function (m2, n2) {
+          return m2 + n2;
+        }, 0);
+      }, 0);
+      return m;
+    };
+  }
+};
+// function chordMpr (data) {
+//   var mpr = {}, mmap = {}, n = 0,
+//       matrix = [], filter, accessor;
+
+//   mpr.setFilter = function (fun) {
+//     filter = fun;
+//     return this;
+//   },
+//   mpr.setAccessor = function (fun) {
+//     accessor = fun;
+//     return this;
+//   },
+//   mpr.getMatrix = function () {
+//     matrix = [];
+//     _.each(mmap, function (a) {
+//       if (!matrix[a.id]) matrix[a.id] = [];
+//       _.each(mmap, function (b) {
+//        var recs = _.filter(data, function (row) {
+//           return filter(row, a, b);
+//         })
+//         matrix[a.id][b.id] = accessor(recs, a, b);
+//       });
+//     });
+//     return matrix;
+//   },
+//   mpr.getMap = function () {
+//     return mmap;
+//   },
+//   mpr.printMatrix = function () {
+//     _.each(matrix, function (elem) {
+//       console.log(elem);
+//     })
+//   },
+//   mpr.addToMap = function (value, info) {
+//     if (!mmap[value]) {
+//       mmap[value] = { name: value, id: n++, data: info }
+//     }
+//   },
+//   mpr.addValuesToMap = function (varName, info) {
+//     var values = _.uniq(_.pluck(data, varName));
+//     _.map(values, function (v) {
+//       if (!mmap[v]) {
+//         mmap[v] = { name: v, id: n++, data: info }
+//       }
+//     });
+//     return this;
+//   }
+//   return mpr;
+// }
+// //*******************************************************************
+// //  CHORD READER
+// //*******************************************************************
+// function chordRdr (matrix, mmap) {
+//   return function (d) {
+//     var i,j,s,t,g,m = {};
+//     if (d.source) {
+//       i = d.source.index; j = d.target.index;
+//       s = _.where(mmap, {id: i });
+//       t = _.where(mmap, {id: j });
+//       m.sname = s[0].name;
+//       m.sdata = d.source.value;
+//       m.svalue = +d.source.value;
+//       m.stotal = _.reduce(matrix[i], function (k, n) { return k + n }, 0);
+//       m.tname = t[0].name;
+//       m.tdata = d.target.value;
+//       m.tvalue = +d.target.value;
+//       m.ttotal = _.reduce(matrix[j], function (k, n) { return k + n }, 0);
+//     } else {
+//       g = _.where(mmap, {id: d.index });
+//       m.gname = g[0].name;
+//       m.gdata = g[0].data;
+//       m.gvalue = d.value;
+//     }
+//     m.mtotal = _.reduce(matrix, function (m1, n1) {
+//       return m1 + _.reduce(n1, function (m2, n2) { return m2 + n2}, 0);
+//     }, 0);
+//     return m;
+//   }
+// }
+
+module.exports = MapperUtil;
+
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var BubbleJS = require('./bubble_js_module.js'),
-    ExtensionUtils = require('./extension_module.js');
+    ExtensionUtils = require('./extension_module.js'),
+    DimensionsUtil = require('./dimensions_module.js'),
+    MapperUtil = require('./mapper_module.js');
 
 var ReactUtils = {
   bubbleVis: function bubbleVis() {
-    var root = ExtensionUtils.getReactComponentRoot();
-    //var root = chrome.
+    var root = ExtensionUtils.getReactComponentTree();
+
+    // ExtensionUtils.messageBackground({
+    //   type: 'getReactComponentTree'
+    // });
 
     console.log("React Components Root: ", root);
-    //BubbleJS.update(root);
+    BubbleJS.update(root);
+  },
+
+  chordVis: function chordVis() {
+
+    var chordArray = ExtensionUtils.getReactComponentChordArray();
+    var mpr = MapperUtil.chordMpr(chordArray);
+
+    mpr.addValuesToMap('component').setFilter(function (row, a, b) {
+      return true; //(row.component === a.name && row.dependentcy === b.name)
+    }).setAccessor(function (recs, a, b) {
+      if (!recs[0]) return 0;
+      return +recs[0].count;
+    });
+    drawChords(mpr.getMatrix(), mpr.getMap());
   }
 };
 
+function drawChords(matrix, mmap) {
+  var w = 980,
+      //DimensionsUtil.getWidth(),
+  h = 800,
+      //DimensionsUtil.getHeight(),
+  r1 = h / 2,
+      r0 = r1 - 100;
+
+  console.log("matrix: ", matrix, ", mmap: ", mmap);
+  var fill = d3.scale.ordinal().domain(d3.range(4)).range(["#000000", "#FFDD89", "#957244", "#F26223"]);
+
+  var chord = d3.layout.chord().padding(.02).sortSubgroups(d3.descending).sortChords(d3.descending);
+
+  var arc = d3.svg.arc().innerRadius(r0).outerRadius(r0 + 20);
+
+  $('.bubble-chart').empty();
+
+  var svg = d3.select("svg.bubble-chart").attr("width", w).attr("height", h).append("svg:g").attr("id", "circle").attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
+
+  svg.append("circle").attr("r", r0 + 20);
+
+  var rdr = MapperUtil.chordRdr(matrix, mmap);
+  chord.matrix(matrix);
+
+  var g = svg.selectAll("g.group").data(chord.groups()).enter().append("svg:g").attr("class", "group").on("mouseover", mouseover).on("mouseout", function (d) {
+    d3.select("#tooltip").style("visibility", "hidden");
+  });
+
+  g.append("svg:path").style("stroke", "black").style("fill", function (d) {
+    return fill(d.index);
+  }).attr("d", arc);
+
+  g.append("svg:text").each(function (d) {
+    d.angle = (d.startAngle + d.endAngle) / 2;
+  }).attr("dy", ".35em").style("font-family", "helvetica, arial, sans-serif").style("font-size", "10px").attr("text-anchor", function (d) {
+    return d.angle > Math.PI ? "end" : null;
+  }).attr("transform", function (d) {
+    return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")" + "translate(" + (r0 + 26) + ")" + (d.angle > Math.PI ? "rotate(180)" : "");
+  }).text(function (d) {
+    return rdr(d).gname;
+  });
+
+  var chordPaths = svg.selectAll("path.chord").data(chord.chords()).enter().append("svg:path").attr("class", "chord").style("stroke", function (d) {
+    return d3.rgb(fill(d.target.index)).darker();
+  }).style("fill", function (d) {
+    return fill(d.target.index);
+  }).attr("d", d3.svg.chord().radius(r0)).on("mouseover", function (d) {
+    d3.select("#tooltip").style("visibility", "visible").html(chordTip(rdr(d))).style("top", function () {
+      return d3.event.pageY - 100 + "px";
+    }).style("left", function () {
+      return d3.event.pageX - 100 + "px";
+    });
+  }).on("mouseout", function (d) {
+    d3.select("#tooltip").style("visibility", "hidden");
+  });
+
+  function chordTip(d) {
+    var p = d3.format(".2%"),
+        q = d3.format(",.3r");
+    return "Chord Info:<br/>" + p(d.svalue / d.stotal) + " (" + q(d.svalue) + ") of " + d.sname + " prefer " + d.tname + (d.sname === d.tname ? "" : "<br/>while...<br/>" + p(d.tvalue / d.ttotal) + " (" + q(d.tvalue) + ") of " + d.tname + " prefer " + d.sname);
+  }
+
+  function groupTip(d) {
+    var p = d3.format(".1%"),
+        q = d3.format(",.3r");
+    return "Group Info:<br/>" + d.gname + " : " + q(d.gvalue) + "<br/>" + p(d.gvalue / d.mtotal) + " of Matrix Total (" + q(d.mtotal) + ")";
+  }
+
+  function mouseover(d, i) {
+    d3.select("#tooltip").style("visibility", "visible").html(groupTip(rdr(d))).style("top", function () {
+      return d3.event.pageY - 80 + "px";
+    }).style("left", function () {
+      return d3.event.pageX - 130 + "px";
+    });
+
+    chordPaths.classed("fade", function (p) {
+      return p.source.index != i && p.target.index != i;
+    });
+  }
+}
+
 module.exports = ReactUtils;
 
-},{"./bubble_js_module.js":2,"./extension_module.js":7}],9:[function(require,module,exports){
+},{"./bubble_js_module.js":2,"./dimensions_module.js":5,"./extension_module.js":7,"./mapper_module.js":8}],10:[function(require,module,exports){
 "use strict";
 
 var vis;
@@ -1460,12 +1777,12 @@ var SelectionUtils = {
 
 module.exports = SelectionUtils;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 var SelectionUtils = require('./selections_module.js');
 
-var zoomScale = window.zoomScale;
+var zoomScale = window.zoomScale; //wont work b/c js assigns strings and numbers as values, not as references
 
 function getToolTipText(d) {
   if (d.type === 'file') {
@@ -1499,15 +1816,16 @@ function hasLabel(d) {
 }
 
 function isHidden() {
+  //console.log("isHidden: ", this.style.opacity === '1e-06');
   return this.style.opacity === '1e-06';
 }
 
 function isVisible() {
-  return !isHidden();
+  return !isHidden.call(this);
 }
 
 function getLabelOpacity(d) {
-  if (d.r * zoomScale < 15) {
+  if (d.r * window.zoomScale < 15) {
     return 1e-6;
   } else {
     return 1;
@@ -1518,10 +1836,10 @@ function getLabelText(d) {
   var text = getToolTipText(d),
       letterWidth = getFontSize(d);
 
-  return text ? text.slice(0, parseInt(d.r * zoomScale / letterWidth * 2 + 2)) : '';
+  return text ? text.slice(0, parseInt(d.r * window.zoomScale / letterWidth * 2 + 2)) : '';
 }
 
-function getFontSize(d) {
+function getFontSize(d, i) {
   var fontSize;
 
   if (d.type === 'file' || d.type === 'inlineScript') {
@@ -1532,10 +1850,12 @@ function getFontSize(d) {
     fontSize = 11;
   }
 
-  return fontSize / zoomScale;
+  return fontSize / window.zoomScale;
 }
 
 function getLabelVerticalOffset(d) {
+  var zoomScale = window.zoomScale;
+
   if (d.type === 'file' || d.type === 'inlineScript') {
     return -0.75 * d.r;
   } else if (d.r * zoomScale > 20 && d.children && d.children.length < 3 && d.children.length) {
@@ -1547,16 +1867,13 @@ function getLabelVerticalOffset(d) {
 }
 
 function updateLabelsAfterZoom() {
-  var labels = SelectionUtils.getLabels();
+  var labels = SelectionUtils.getLabels(),
+      zoomScale = window.zoomScale;
 
   labels.attr("dy", getLabelVerticalOffset);
-  labels.filter(function (d) {
-    isHidden.bind(this);
-  }).style('font-size', getFontSize).text(getLabelText).transition().duration(500).style("opacity", getLabelOpacity);
+  labels.filter(isHidden).style('font-size', getFontSize).text(getLabelText).transition().duration(500).style("opacity", getLabelOpacity);
 
-  labels.filter(function (d) {
-    isVisible.bind(this);
-  }).transition().duration(500).style("font-size", getFontSize).style("opacity", getLabelOpacity).transition().delay(500).text(getLabelText);
+  labels.filter(isVisible).transition().duration(500).style("font-size", getFontSize).style("opacity", getLabelOpacity).transition().delay(500).text(getLabelText);
 }
 
 var TextUtils = {
@@ -1575,7 +1892,7 @@ var TextUtils = {
 
 module.exports = TextUtils;
 
-},{"./selections_module.js":9}],11:[function(require,module,exports){
+},{"./selections_module.js":10}],12:[function(require,module,exports){
 'use strict';
 
 var TextUtils = require('./text_module.js');
@@ -1595,7 +1912,7 @@ var TipUtils = {
 
 module.exports = TipUtils;
 
-},{"./text_module.js":10}],12:[function(require,module,exports){
+},{"./text_module.js":11}],13:[function(require,module,exports){
 'use strict';
 
 var TreeUtils = {
@@ -1622,7 +1939,7 @@ var TreeUtils = {
 
 module.exports = TreeUtils;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 window.zoomScale = 1;
@@ -1677,5 +1994,5 @@ function setGlobalZoomScale(scale) {
 
 module.exports = ZoomUtils;
 
-},{"./circle_module.js":3,"./selections_module.js":9,"./text_module.js":10}]},{},[1])
+},{"./circle_module.js":3,"./selections_module.js":10,"./text_module.js":11}]},{},[1])
 //# sourceMappingURL=bubble_bundle.js.map

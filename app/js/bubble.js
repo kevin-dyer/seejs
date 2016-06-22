@@ -25,6 +25,7 @@ TipUtils.initToolTip();
 BubbleJS.initVis();
 
 var root = ExtensionUtils.getCodeTree();
+console.log("root: ", root);
 BubbleJS.update(root);
 
 $(window).resize(function () {
@@ -36,6 +37,7 @@ $(document).ready(function () {
   $(".close-editor-button").click(EditorUtils.hideCode);
   $(".webpage-title").click(ExtensionUtils.goToSourcePage);
   $('#show-react-bubbles').click(ReactUtils.bubbleVis);
+  $('#show-react-chord').click(ReactUtils.chordVis);
 });
 
 

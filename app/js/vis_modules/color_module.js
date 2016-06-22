@@ -50,7 +50,9 @@ var ColorUtils = {
       return backgroundColor;
     } else if (d.type ==='hidden') {
       return backgroundColor;
-    }else {
+    } else if (d.type === 'property' && d.name === 'render') {
+      return '#000000';
+    } else {
       return getFillColor(d);
     }
   },

@@ -543,6 +543,7 @@ var PopupComponent = React.createClass({
     //background response
     port.onMessage.addListener(function (msg) {
       console.log("message recieved" + msg);
+
       if (typeof callback === 'function') {
         callback(msg);
       }

@@ -1,6 +1,6 @@
-var BubbleJS = require('./bubble_js_module.js'),
-    ZoomUtils = require('./zoom_module.js'),
-    SelectionUtils = require('./selections_module.js');
+//var BubbleJS = require('./bubble_js_module.js'),
+    //ZoomUtils = require('./zoom_module.js'),
+    //SelectionUtils = require('./selections_module.js');
 
 var container,
     w,
