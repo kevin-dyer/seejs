@@ -1,5 +1,10 @@
 'use script';
 
+var $ = require('jquery');
+
+require("jquery-ui");
+require("bootstrap");
+
 (function (exports) {
   var container = document.getElementsByClassName("page-content")[0],
       // w = h = r = container.offsetWidth > container.offsetHeight ? container.offsetHeight : container.offsetWidth,
